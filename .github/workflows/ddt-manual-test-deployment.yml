@@ -13,7 +13,8 @@ on:
   push:
     branches: [ "main" ]
     paths:
-      - 'ddt-manual/**'
+      - 'src/**'
+      - 'DdtManual.slnx'
       - '.github/workflows/ddt-manual-test-deployment.yml'
   workflow_dispatch:
 
@@ -23,10 +24,6 @@ permissions:
 concurrency:
   group: ddt-manual-test-${{ github.ref }}
   cancel-in-progress: true
-
-defaults:
-  run:
-    working-directory: ddt-manual
 
 jobs:
   build:
@@ -44,7 +41,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.nuget/packages
-          key: ${{ runner.os }}-nuget-ddt-manual-${{ hashFiles('ddt-manual/**/packages.lock.json', 'ddt-manual/**/*.csproj') }}
+          key: ${{ runner.os }}-nuget-ddt-manual-${{ hashFiles('**/packages.lock.json', '**/*.csproj') }}
           restore-keys: |
             ${{ runner.os }}-nuget-ddt-manual-
 
