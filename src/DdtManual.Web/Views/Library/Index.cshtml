@@ -1,0 +1,36 @@
+@{
+    ViewData["Title"] = "Your library";
+
+    ViewBag.HeroType = "collection";
+    ViewBag.HeroTitle = "Your library";
+    ViewBag.HeroIntro = "A personalised list of pages you've saved. This list is kept in your browser on this device.";
+    ViewBag.HeroMetaDescription = string.Empty;
+    ViewBag.HeroBadgeText = "Personalised";
+    ViewBag.HeroBreadcrumbCurrent = "Your library";
+    ViewBag.UseInverseNav = true;
+    ViewBag.HideBadge = true;
+}
+
+@section Masthead {
+    @await Html.PartialAsync("_Masthead")
+}
+
+<div class="govuk-grid-row">
+    <main class="govuk-grid-column-two-thirds">
+        <section class="govuk-!-margin-bottom-6">
+            <h2 class="govuk-heading-m govuk-!-margin-bottom-3">Saving items to your local library</h2>
+            <p class="govuk-body">As you browse guidance or standards, you can save items to your local library for easy access later.</p>
+            <p class="govuk-body">To save an item, select <strong>Add to library</strong> on guidance or standard pages. Once added the button will change to <strong>Remove from library</strong>. Selecting it again will remove the item from your library.</p>
+            <p class="govuk-body">Your library is stored in your browser's local storage, which means:</p>
+            <ul class="govuk-list govuk-list--bullet">
+                <li>saved items are only available on this device and browser</li>
+                <li>saved items are available between sessions on this device, even if you close your browser</li>
+                <li>clearing your browser's cache or storage will reset your library</li>
+                <li>you can remove individual items or clear all items from your library</li>
+            </ul>
+        </section>
+        <div id="library-content" aria-live="polite" aria-busy="true">
+            <p class="govuk-body">Loading your saved items&hellip;</p>
+        </div>
+    </main>
+</div>

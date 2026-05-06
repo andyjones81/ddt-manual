@@ -1,0 +1,161 @@
+@using DdtManual.Web.Helpers
+@using DdtManual.Web.Models.Templates
+@using Microsoft.AspNetCore.Mvc.ViewFeatures
+@model ManualCollectionPageModel
+@{
+    ViewData["Title"] = Model.Title;
+    ViewBag.HeroType = "collection";
+    ViewBag.HeroTitle = Model.Title;
+    ViewBag.HeroMetaDescription = Model.MetaDescription;
+    ViewBag.HeroBadgeText = "Collection";
+    ViewBag.UseInverseNav = true;
+    var hasSections = Model.Sections.Count > 0;
+    var showContentsNav = hasSections;
+
+    var currentPath = Context?.Request?.Path.Value?.TrimEnd('/') ?? string.Empty;
+    var requestScheme = Context?.Request?.Scheme ?? "https";
+    var requestHost = Context?.Request?.Host.Value ?? string.Empty;
+    var canonicalCurrentUrl = string.IsNullOrEmpty(requestHost)
+        ? currentPath
+        : $"{requestScheme}://{requestHost}{currentPath}";
+}
+
+@section Masthead {
+    @await Html.PartialAsync("_Masthead")
+}
+
+@if (Model.ShowDraftContentBanner)
+{
+    @await Html.PartialAsync("_DraftContentBanner")
+}
+
+@if (showContentsNav)
+{
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-two-thirds">
+            <nav aria-label="@(Model.Title) contents">
+                <h2 class="govuk-heading-s">Contents</h2>
+                <ul class="govuk-list dfe-f-c-contents-list govuk-!-margin-bottom-9">
+                    @foreach (var grp in Model.Sections)
+                    {
+                        var id = TemplateAnchor.SectionIdFromTitle(grp.Title);
+                        <li><a class="govuk-link" href="#@id">@grp.Title</a></li>
+                    }
+                </ul>
+            </nav>
+        </div>
+    </div>
+}
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <div class="dfe-f-c-border-top">
+            @if (!string.IsNullOrEmpty(Model.BodyHtml))
+            {
+                @Html.Raw(Model.BodyHtml)
+            }
+
+            @if (hasSections)
+            {
+                @for (var i = 0; i < Model.Sections.Count; i++)
+                {
+                    var grp = Model.Sections[i];
+                    var id = TemplateAnchor.SectionIdFromTitle(grp.Title);
+                    var titleId = id + "-title";
+                    <section id="@id" aria-labelledby="@titleId">
+                        <h2 class="govuk-heading-l" id="@titleId">@grp.Title</h2>
+                        @if (grp.Items.Count > 0)
+                        {
+                             <ul class="govuk-list dfe-f-c-results-list">
+                                @foreach (var link in grp.Items)
+                                {
+                                    var isJobDescription = string.Equals(link.ContentType, "Job description", StringComparison.OrdinalIgnoreCase);
+                                    var linkHref = link.Url + (isJobDescription && !string.IsNullOrEmpty(link.CollectionSlugForQuery)
+                                        ? "?collection=" + Uri.EscapeDataString(link.CollectionSlugForQuery)
+                                        : "");
+                                    var subText = link.ContentType;
+                                    var isExternal = string.Equals(link.ContentType, "External link", StringComparison.OrdinalIgnoreCase);
+                                    if (isExternal)
+                                    {
+                                        subText = !string.IsNullOrWhiteSpace(link.LinkType) && string.Equals(link.LinkType, "Standard", StringComparison.OrdinalIgnoreCase)
+                                            ? "Standards"
+                                            : (!string.IsNullOrWhiteSpace(link.LinkType) ? link.LinkType : "External link");
+                                    }
+                                    <li>
+                                     <h3 class="govuk-heading-s govuk-!-margin-bottom-2">
+                                        <a class="govuk-link" href="@linkHref" target="@(link.OpenInNewTab ? "_blank" : null)" rel="@(link.OpenInNewTab ? "noopener noreferrer" : null)">
+                                            @link.Title
+                                            @if (link.OpenInNewTab)
+                                            {
+                                                <span class="govuk-visually-hidden">(opens in new tab)</span>
+                                            }
+                                        </a>
+                                        </h3>
+                                        @if (!string.IsNullOrEmpty(subText))
+                                        {
+                                            <p class="govuk-body">@subText@(isJobDescription && !string.IsNullOrEmpty(link.Grade) ? $" — {link.Grade}" : "")</p>
+                                        }
+                                    </li>
+                                }
+                            </ul>
+                        }
+                    </section>
+                }
+            }
+        </div>
+    </div>
+
+    <div class="govuk-grid-column-one-third">
+        <div class="dfe-f-c-border-top dfe-f-c-border-top--blue">
+            <aside class="dfe-f-detailed-guide-sidebar" aria-label="Supporting information">
+                @await Html.PartialAsync("_SharePage", null, new ViewDataDictionary(ViewData)
+                {
+                    ["ShareTitle"] = Model.Title,
+                    ["ShareUrl"] = canonicalCurrentUrl,
+                    ["LibId"] = currentPath,
+                    ["LibTitle"] = Model.Title,
+                    ["LibUrl"] = currentPath,
+                    ["LibType"] = "Collection",
+                    ["LibDescription"] = Model.MetaDescription ?? string.Empty
+                })
+
+                @if (Model.RelatedContent.Count > 0)
+                {
+                    <section aria-label="Related content" class="govuk-!-margin-top-5">
+                        @foreach (var item in Model.RelatedContent)
+                        {
+                            <div>
+                                <h3 class="govuk-heading-s">@Html.Raw(item.HeaderHtml)</h3>
+                                @if (!string.IsNullOrEmpty(item.ContentHtml))
+                                {
+                                    <div class="govuk-body-s">@Html.Raw(item.ContentHtml)</div>
+                                }
+                            </div>
+                        }
+                    </section>
+                }
+                @if (Model.RelatedFiles.Count > 0)
+                {
+                    <section aria-label="Downloads" class="govuk-!-margin-top-5">
+                        <h3 class="govuk-heading-s">Downloads</h3>
+                        <ul class="govuk-list">
+                            @foreach (var file in Model.RelatedFiles)
+                            {
+                                <li>
+                                    <a class="govuk-link" href="@file.Url" target="_blank" rel="noopener noreferrer">
+                                        @System.Net.WebUtility.HtmlEncode(file.Name)<span class="govuk-visually-hidden"> (opens in new tab)</span>
+                                    </a>
+                                    <p class="govuk-body-s">@System.Net.WebUtility.HtmlEncode(file.FileType) · @System.Net.WebUtility.HtmlEncode(file.SizeDisplay)</p>
+                                    @if (!string.IsNullOrWhiteSpace(file.Caption))
+                                    {
+                                        <p class="govuk-body-s">@System.Net.WebUtility.HtmlEncode(file.Caption)</p>
+                                    }
+                                </li>
+                            }
+                        </ul>
+                    </section>
+                }
+            </aside>
+        </div>
+    </div>
+</div>

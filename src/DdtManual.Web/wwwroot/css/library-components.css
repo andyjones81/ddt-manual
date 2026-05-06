@@ -1,0 +1,246 @@
+/**
+ * Your library: modals, cards, filters, nav count, share-panel save button.
+ */
+/* Nav count — matches DfE count badge; scoped so other .dfe-f-count-badge uses stay unstyled if added later */
+.govuk-service-navigation .dfe-f-count-badge.lib-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  margin-left: 5px;
+  background: #1d70b8;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border-radius: 9px;
+  vertical-align: middle;
+  line-height: 1;
+}
+
+/* Homepage (inverse service nav): white pill, blue digit — matches dark nav bar */
+.govuk-service-navigation--inverse .dfe-f-count-badge.lib-count {
+  background: #ffffff;
+  color: #1d70b8;
+}
+
+.lib-empty {
+  padding: 24px 0 48px;
+}
+
+.lib-meta {
+  color: #505a5f;
+}
+
+.lib-text-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: inherit;
+  color: #1d70b8;
+  text-decoration: underline;
+}
+
+.lib-text-btn:hover {
+  color: #003078;
+  text-decoration-thickness: 3px;
+}
+
+.lib-text-btn:focus {
+  outline: 3px solid #fd0;
+  outline-offset: 0;
+  background: #fd0;
+  color: #0b0c0c;
+}
+
+.lib-items {
+  list-style: none;
+  margin: 0 0 36px;
+  padding: 0;
+}
+
+.lib-card {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px;
+  border: 1px solid #b1b4b6;
+  margin-bottom: 8px;
+  background: #fff;
+  transition: border-color 0.1s ease;
+}
+
+.lib-card:hover {
+  border-color: #0b0c0c;
+}
+
+.lib-card__main {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.lib-card__title {
+  display: block;
+  font-weight: 700;
+  font-size: 1rem;
+  margin-bottom: 4px;
+  word-break: break-word;
+}
+
+.lib-card__desc {
+  margin: 0;
+  color: #505a5f;
+}
+
+/* Remove control — same .library-btn / .library-btn--saved pattern as _SharePage when saved */
+.lib-card .library-btn.lib-card__remove {
+  flex-shrink: 0;
+  align-self: flex-start;
+  white-space: nowrap;
+}
+
+.lib-modal-open {
+  overflow: hidden;
+}
+
+.lib-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lib-modal[hidden] {
+  display: none;
+}
+
+.lib-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(11, 12, 12, 0.7);
+}
+
+.lib-modal__dialog {
+  position: relative;
+  width: min(92vw, 540px);
+  background: #fff;
+  border: 3px solid #0b0c0c;
+  border-radius: 6px;
+  padding: 24px;
+  box-shadow: 0 8px 24px rgba(11, 12, 12, 0.22);
+}
+
+.lib-modal__title {
+  margin-bottom: 12px;
+}
+
+.lib-modal__actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+  align-items: center;
+}
+
+.lib-modal__actions .govuk-button {
+  margin-bottom: 0;
+}
+
+@media (max-width: 40rem) {
+  .lib-modal__actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .lib-modal__actions .govuk-button {
+    width: 100%;
+  }
+}
+
+/* --- Save to library (share panel) --- */
+.library-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  margin-top: 0;
+  box-sizing: border-box;
+  width: auto;
+  max-width: 100%;
+  justify-content: flex-start;
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.5;
+  cursor: pointer;
+  text-decoration: none;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease,
+    color 0.15s ease;
+  background: #fff;
+  border: 2px solid #1d70b8;
+  color: #0b0c0c;
+}
+
+.library-btn:hover {
+  border-color: #003078;
+  background: #f3f2f1;
+  color: #003078;
+}
+
+.library-btn:focus {
+  outline: 3px solid #fd0;
+  outline-offset: 0;
+  background: #fd0;
+  color: #0b0c0c;
+}
+
+.library-btn:focus .library-btn__icon.material-symbols-sharp {
+  color: #0b0c0c;
+}
+
+.library-btn--saved {
+  border-color: #1d70b8;
+  color: #1d70b8;
+  background: #e8f0fc;
+}
+
+.library-btn--saved:hover {
+  border-color: #003078;
+  color: #003078;
+  background: #dce8fa;
+}
+
+/* Material Symbols Sharp — ligatures set in markup / library.js (bookmark_add | bookmark_remove) */
+.library-btn__icon.material-symbols-sharp {
+  flex-shrink: 0;
+  font-size: 24px;
+  line-height: 1;
+  width: 24px;
+  height: 24px;
+  font-variation-settings:
+    'FILL' 0,
+    'wght' 400,
+    'GRAD' 0,
+    'opsz' 24;
+  color: #1d70b8;
+}
+
+.library-btn--saved .library-btn__icon.material-symbols-sharp {
+  color: #1d70b8;
+}
+
+.library-btn:hover .library-btn__icon.material-symbols-sharp,
+.library-btn--saved:hover .library-btn__icon.material-symbols-sharp {
+  color: #003078;
+}
+
+.library-saved .lib-items {
+  margin-bottom: 24px;
+}

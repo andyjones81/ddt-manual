@@ -1,0 +1,14 @@
+@{
+  const string AppWidthContainer = "govuk-width-container dfe-f-app-container dfe-f-app-container--wide";
+  var serviceName = ViewData["ServiceName"] as string ?? "DdT Manual";
+}
+@* DfE branding: GOV.UK header + wide DfE container (dfe.min.css). Service links live in _ServiceNavigation. *@
+<header class="govuk-header" data-module="govuk-header">
+  <div class="govuk-header__container @AppWidthContainer">
+    <div class="govuk-header__logo">
+      <a href="https://www.gov.uk/government/organisations/department-for-education" class="govuk-header__link govuk-header__link--homepage">
+        <img src="https://design.education.gov.uk/public/images/department-for-education_white.png" alt="Department for Education" class="govuk-header__logotype" width="148" height="30" />
+      </a>
+    </div>
+  </div>
+</header>

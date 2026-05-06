@@ -1,0 +1,28 @@
+@{
+    var shareTitle = ViewData["ShareTitle"] as string ?? string.Empty;
+    var shareUrl = ViewData["ShareUrl"] as string ?? string.Empty;
+    var libId = ViewData["LibId"] as string ?? string.Empty;
+    var libTitle = ViewData["LibTitle"] as string ?? shareTitle;
+    var libUrl = ViewData["LibUrl"] as string ?? shareUrl;
+    var libType = ViewData["LibType"] as string ?? "Guidance";
+    var libDescription = ViewData["LibDescription"] as string ?? string.Empty;
+}
+
+<section id="your-library" class="share-panel govuk-!-margin-top-0" aria-labelledby="your-library-heading" data-share-title="@shareTitle" data-share-url="@shareUrl">
+    <h3 id="your-library-heading" class="govuk-heading-s govuk-!-margin-top-0">Your library</h3>
+
+    <p class="govuk-body-s govuk-!-margin-bottom-3">Add this page to open it quickly from Your library.</p>
+
+    <button type="button"
+        class="library-btn share-panel__library-btn govuk-!-margin-bottom-0"
+        data-library-toggle
+        data-lib-id="@libId"
+        data-lib-title="@libTitle"
+        data-lib-url="@libUrl"
+        data-lib-type="@libType"
+        data-lib-description="@libDescription"
+        aria-pressed="false">
+        <span class="material-symbols-sharp library-btn__icon" aria-hidden="true">bookmark_add</span>
+        <span class="library-btn__label">Add to library</span>
+    </button>
+</section>

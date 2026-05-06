@@ -1,0 +1,44 @@
+@model ContentByProfessionViewModel
+@using System.Linq
+@{
+    ViewData["Title"] = $"Content — {Model.ProfessionTitle}";
+}
+
+<nav class="govuk-breadcrumbs govuk-!-margin-bottom-6" aria-label="Breadcrumb">
+    <ol class="govuk-breadcrumbs__list">
+        <li class="govuk-breadcrumbs__list-item"><a class="govuk-breadcrumbs__link" href="/">Home</a></li>
+        <li class="govuk-breadcrumbs__list-item"><a class="govuk-breadcrumbs__link" href="/content">Content index</a></li>
+        <li class="govuk-breadcrumbs__list-item" aria-current="page">@Model.ProfessionTitle</li>
+    </ol>
+</nav>
+
+<h1 class="govuk-heading-xl govuk-!-margin-bottom-4">Content tagged: @Model.ProfessionTitle</h1>
+
+@if (Model.Items.Count == 0)
+{
+    <p class="govuk-body">No content found for this profession.</p>
+}
+else
+{
+    <table class="govuk-table">
+        <thead class="govuk-table__head">
+            <tr class="govuk-table__row">
+                <th scope="col" class="govuk-table__header govuk-!-width-one-third">Title</th>
+                <th scope="col" class="govuk-table__header govuk-!-width-one-sixth">Type</th>
+                <th scope="col" class="govuk-table__header">Description</th>
+            </tr>
+        </thead>
+        <tbody class="govuk-table__body">
+            @foreach (var item in Model.Items)
+            {
+                <tr class="govuk-table__row">
+                    <td class="govuk-table__cell"><a href="@item.Url" class="govuk-link">@item.Title</a></td>
+                    <td class="govuk-table__cell govuk-body-s">@item.ContentType</td>
+                    <td class="govuk-table__cell">@(item.MetaDescription ?? "—")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<p class="govuk-body govuk-!-margin-top-6"><a href="/content" class="govuk-link">Back to content index</a></p>

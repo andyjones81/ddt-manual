@@ -1,0 +1,232 @@
+@model IReadOnlyList<ContentIndexItemDto>
+@using System.Linq
+@using System.Globalization
+@{
+    ViewData["Title"] = "Content index";
+    ViewBag.HeroTitle = "Published content";
+    ViewBag.HeroIntro = "All published content from the CMS, grouped by type. Links open the corresponding page on this site.";
+    ViewBag.HeroBadgeText = "Content";
+    ViewBag.HeroBreadcrumbItems = new List<(string Title, string? Url)>
+    {
+        ("Home", "/"),
+        ("Content index", null)
+    };
+
+    var hasContent = Model.Count > 0;
+    var groupedBySection = hasContent
+        ? Model.GroupBy(i => i.ContentType == "Phase" ? "Lifecycle" : i.ContentType)
+            .OrderBy(g => g.Key, StringComparer.OrdinalIgnoreCase)
+            .ToList()
+        : [];
+    var phaseTags = hasContent
+        ? Model.SelectMany(i => i.ApplicablePhaseTags).DistinctBy(t => t.Slug).OrderBy(t => t.Title, StringComparer.OrdinalIgnoreCase).ToList()
+        : [];
+    var professionTags = hasContent
+        ? Model.SelectMany(i => i.ApplicableProfessionTags).DistinctBy(t => t.Slug).OrderBy(t => t.Title, StringComparer.OrdinalIgnoreCase).ToList()
+        : [];
+    var hasPhaseSection = phaseTags.Count > 0;
+    var hasProfessionSection = professionTags.Count > 0;
+}
+
+@section Masthead {
+    @await Html.PartialAsync("_Masthead")
+}
+
+
+        @if (groupedBySection.Count > 0)
+        {
+            <section id="content-by-type">
+                <h2 class="govuk-heading-l govuk-!-margin-bottom-4">Content by type</h2>
+
+                <div class="dfe-f-toggle-group" data-module="dfe-f-toggle-group">
+                    <div class="dfe-f-toggle-group__controls govuk-body-s">
+                        <button type="button" class="dfe-f-toggle-group__action" data-dfe-toggle-expand-all>Expand all</button>
+                        <span class="dfe-f-toggle-group__separator" aria-hidden="true"> · </span>
+                        <button type="button" class="dfe-f-toggle-group__action" data-dfe-toggle-collapse-all>Collapse all</button>
+                    </div>
+                    <div class="dfe-f-toggle-group__items">
+                        @{ var ctIx = 0; }
+                        @foreach (var contentSection in groupedBySection)
+                        {
+                            var panelId = $"ct-{ctIx.ToString(CultureInfo.InvariantCulture)}";
+                            var buttonId = $"{panelId}-button";
+                            ctIx++;
+                            <div class="dfe-f-toggle" data-module="dfe-f-toggle">
+                                <div class="dfe-f-toggle__title-wrapper">
+                                    <h3 class="dfe-f-toggle__heading">
+                                        <button type="button" id="@buttonId" class="dfe-f-toggle__button" aria-expanded="false" aria-controls="@($"{panelId}-content")">
+                                            <span class="dfe-f-toggle__icon" aria-hidden="true"></span>
+                                            <span class="dfe-f-toggle__title">@contentSection.Key</span>
+                                        </button>
+                                    </h3>
+                                </div>
+                                <div id="@($"{panelId}-content")" class="dfe-f-toggle__content" hidden>
+                                    <div class="dfe-f-toggle__body govuk-body">
+                                        <table class="govuk-table">
+                                            <thead class="govuk-table__head">
+                                                <tr class="govuk-table__row">
+                                                    <th scope="col" class="govuk-table__header govuk-!-width-one-third">Title</th>
+                                                    <th scope="col" class="govuk-table__header">Description</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="govuk-table__body">
+                                                @if (contentSection.Key == "Lifecycle")
+                                                {
+                                                    var lifecycleItem = contentSection.FirstOrDefault(i => i.ContentType == "Lifecycle");
+                                                    if (lifecycleItem != null)
+                                                    {
+                                                        <tr class="govuk-table__row">
+                                                            <td class="govuk-table__cell govuk-!-font-weight-bold"><a href="@lifecycleItem.Url" class="govuk-link">@lifecycleItem.Title</a></td>
+                                                            <td class="govuk-table__cell">@(lifecycleItem.MetaDescription ?? "—")</td>
+                                                        </tr>
+                                                    }
+                                                    foreach (var phase in contentSection.Where(i => i.ContentType == "Phase").OrderBy(i => i.Title, StringComparer.OrdinalIgnoreCase))
+                                                    {
+                                                        <tr class="govuk-table__row">
+                                                            <td class="govuk-table__cell govuk-!-padding-left-6"><a href="@phase.Url" class="govuk-link">@phase.Title</a></td>
+                                                            <td class="govuk-table__cell">@(phase.MetaDescription ?? "—")</td>
+                                                        </tr>
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    foreach (var item in contentSection.OrderBy(i => i.Title, StringComparer.OrdinalIgnoreCase))
+                                                    {
+                                                        <tr class="govuk-table__row">
+                                                            <td class="govuk-table__cell govuk-!-font-weight-bold"><a href="@item.Url" class="govuk-link">@item.Title</a></td>
+                                                            <td class="govuk-table__cell">@(item.MetaDescription ?? "—")</td>
+                                                        </tr>
+                                                    }
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </section>
+        }
+
+        @if (hasPhaseSection)
+        {
+            <section id="content-by-phase" class="govuk-!-margin-top-8">
+                <h2 class="govuk-heading-l govuk-!-margin-bottom-2">Content by phase</h2>
+                <p class="govuk-body govuk-!-margin-bottom-4">Content tagged with delivery phases.</p>
+
+                <div class="dfe-f-toggle-group" data-module="dfe-f-toggle-group">
+                    <div class="dfe-f-toggle-group__controls govuk-body-s">
+                        <button type="button" class="dfe-f-toggle-group__action" data-dfe-toggle-expand-all>Expand all</button>
+                        <span class="dfe-f-toggle-group__separator" aria-hidden="true"> · </span>
+                        <button type="button" class="dfe-f-toggle-group__action" data-dfe-toggle-collapse-all>Collapse all</button>
+                    </div>
+                    <div class="dfe-f-toggle-group__items">
+                        @{ var phIx = 0; }
+                        @foreach (var tag in phaseTags)
+                        {
+                            var phaseItems = Model.Where(i => i.ApplicablePhaseTags.Any(pt => pt.Slug == tag.Slug)).OrderBy(i => i.Title, StringComparer.OrdinalIgnoreCase).ToList();
+                            var panelId = $"ph-{phIx.ToString(CultureInfo.InvariantCulture)}";
+                            var buttonId = $"{panelId}-button";
+                            phIx++;
+                            <div class="dfe-f-toggle" data-module="dfe-f-toggle">
+                                <div class="dfe-f-toggle__title-wrapper">
+                                    <h3 class="dfe-f-toggle__heading">
+                                        <button type="button" id="@buttonId" class="dfe-f-toggle__button" aria-expanded="false" aria-controls="@($"{panelId}-content")">
+                                            <span class="dfe-f-toggle__icon" aria-hidden="true"></span>
+                                            <span class="dfe-f-toggle__title">@tag.Title</span>
+                                        </button>
+                                    </h3>
+                                </div>
+                                <div id="@($"{panelId}-content")" class="dfe-f-toggle__content" hidden>
+                                    <div class="dfe-f-toggle__body govuk-body">
+                                        <table class="govuk-table govuk-!-margin-bottom-0">
+                                            <thead class="govuk-table__head">
+                                                <tr class="govuk-table__row">
+                                                    <th scope="col" class="govuk-table__header govuk-!-width-one-third">Title</th>
+                                                    <th scope="col" class="govuk-table__header govuk-!-width-one-sixth">Type</th>
+                                                    <th scope="col" class="govuk-table__header">Description</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="govuk-table__body">
+                                                @foreach (var item in phaseItems)
+                                                {
+                                                    <tr class="govuk-table__row">
+                                                        <td class="govuk-table__cell"><a href="@item.Url" class="govuk-link">@item.Title</a></td>
+                                                        <td class="govuk-table__cell govuk-body-s">@item.ContentType</td>
+                                                        <td class="govuk-table__cell">@(item.MetaDescription ?? "—")</td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </section>
+        }
+
+        @if (hasProfessionSection)
+        {
+            <section id="content-by-profession" class="govuk-!-margin-top-8">
+                <h2 class="govuk-heading-l govuk-!-margin-bottom-2">Content by profession</h2>
+                <p class="govuk-body govuk-!-margin-bottom-4">Content tagged with professions.</p>
+
+                <div class="dfe-f-toggle-group" data-module="dfe-f-toggle-group">
+                    <div class="dfe-f-toggle-group__controls govuk-body-s">
+                        <button type="button" class="dfe-f-toggle-group__action" data-dfe-toggle-expand-all>Expand all</button>
+                        <span class="dfe-f-toggle-group__separator" aria-hidden="true"> · </span>
+                        <button type="button" class="dfe-f-toggle-group__action" data-dfe-toggle-collapse-all>Collapse all</button>
+                    </div>
+                    <div class="dfe-f-toggle-group__items">
+                        @{ var prIx = 0; }
+                        @foreach (var tag in professionTags)
+                        {
+                            var professionItems = Model.Where(i => i.ApplicableProfessionTags.Any(pt => pt.Slug == tag.Slug)).OrderBy(i => i.Title, StringComparer.OrdinalIgnoreCase).ToList();
+                            var panelId = $"pr-{prIx.ToString(CultureInfo.InvariantCulture)}";
+                            var buttonId = $"{panelId}-button";
+                            prIx++;
+                            <div class="dfe-f-toggle" data-module="dfe-f-toggle">
+                                <div class="dfe-f-toggle__title-wrapper">
+                                    <h3 class="dfe-f-toggle__heading">
+                                        <button type="button" id="@buttonId" class="dfe-f-toggle__button" aria-expanded="false" aria-controls="@($"{panelId}-content")">
+                                            <span class="dfe-f-toggle__icon" aria-hidden="true"></span>
+                                            <span class="dfe-f-toggle__title">@tag.Title</span>
+                                        </button>
+                                    </h3>
+                                </div>
+                                <div id="@($"{panelId}-content")" class="dfe-f-toggle__content" hidden>
+                                    <div class="dfe-f-toggle__body govuk-body">
+                                        <p class="govuk-body-s govuk-!-margin-top-0 govuk-!-margin-bottom-3">
+                                            <a href="/content/profession/@Uri.EscapeDataString(tag.Slug)" class="govuk-link">View content index for @tag.Title</a>
+                                        </p>
+                                        <table class="govuk-table govuk-!-margin-bottom-0">
+                                            <thead class="govuk-table__head">
+                                                <tr class="govuk-table__row">
+                                                    <th scope="col" class="govuk-table__header govuk-!-width-one-third">Title</th>
+                                                    <th scope="col" class="govuk-table__header govuk-!-width-one-sixth">Type</th>
+                                                    <th scope="col" class="govuk-table__header">Description</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="govuk-table__body">
+                                                @foreach (var item in professionItems)
+                                                {
+                                                    <tr class="govuk-table__row">
+                                                        <td class="govuk-table__cell"><a href="@item.Url" class="govuk-link">@item.Title</a></td>
+                                                        <td class="govuk-table__cell govuk-body-s">@item.ContentType</td>
+                                                        <td class="govuk-table__cell">@(item.MetaDescription ?? "—")</td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </section>
+        }
+

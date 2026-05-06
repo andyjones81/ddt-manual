@@ -1,0 +1,38 @@
+@model DdtManual.Application.Content.RoadmapDto
+@{
+    ViewData["Title"] = Model.Title;
+    ViewBag.HeroType = "content";
+    ViewBag.HeroTitle = Model.Title;
+    ViewBag.HeroIntro = Model.MetaDescription;
+    ViewBag.HeroBadgeText = "Roadmap";
+    ViewBag.HeroBreadcrumbItems = new List<(string Title, string? Url)>
+    {
+        ("Home", "/"),
+        ("Roadmap", null)
+    };
+}
+
+@section Masthead {
+    @await Html.PartialAsync("_Masthead")
+}
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        @if (!string.IsNullOrWhiteSpace(Model.BodyMarkdown))
+        {
+            <div class="dfe-f-body govuk-!-margin-bottom-6">
+                @Html.Raw(GovUkMarkdown.ToBodyHtmlOrHtmlFragment(Model.BodyMarkdown))
+            </div>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(Model.UpdateHistoryMarkdown))
+        {
+            <section class="dfe-f-content-section" aria-labelledby="roadmap-update-history-heading">
+                <h2 class="govuk-heading-l" id="roadmap-update-history-heading">Update history</h2>
+                <div class="dfe-f-body">
+                    @Html.Raw(GovUkMarkdown.ToBodyHtmlOrHtmlFragment(Model.UpdateHistoryMarkdown))
+                </div>
+            </section>
+        }
+    </div>
+</div>

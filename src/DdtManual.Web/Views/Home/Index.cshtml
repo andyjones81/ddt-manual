@@ -1,0 +1,29 @@
+@model HomepageDto
+@{
+    ViewData["Title"] = Model.Title;
+}
+
+@section Masthead {
+    <div class="dfe-f-masthead dfe-f-masthead--product">
+        <div class="govuk-width-container dfe-f-app-container dfe-f-app-container--wide dfe-f-masthead__inner">
+            @Html.Raw(Model.Headline ?? string.Empty)
+        </div>
+    </div>
+}
+
+@Html.Raw(Model.Html ?? string.Empty)
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/dfe-f-homepage.css" asp-append-version="true" />
+    @if (!string.IsNullOrEmpty(Model.CustomCss))
+    {
+        <style>@Html.Raw(Model.CustomCss)</style>
+    }
+}
+
+@section Scripts {
+    @if (!string.IsNullOrEmpty(Model.CustomJs))
+    {
+        <script>@Html.Raw(Model.CustomJs)</script>
+    }
+}

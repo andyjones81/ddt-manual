@@ -1,0 +1,28 @@
+/* Site search — result list and keyword highlight (.dfe-f-search-page). */
+
+mark.dfe-f-search-highlight {
+  background-color: var(--govuk-colour-focus);
+  color: var(--govuk-colour-text);
+  padding: 0 2px;
+  border-radius: 1px;
+}
+
+.dfe-f-search-page .dfe-f-search-results__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dfe-f-search-page .dfe-f-search-results__item {
+  border-bottom: 1px solid #e8e8e8;
+  padding-bottom: 16px;
+  margin-bottom: 20px;
+}
+
+.dfe-f-search-page .dfe-f-search-results__item:last-child {
+  margin-bottom: 0;
+}
+
+.dfe-f-search-page .dfe-f-search-results__meta {
+  color: var(--govuk-colour-secondary-text);
+}

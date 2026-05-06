@@ -1,0 +1,55 @@
+@{
+  const string AppWidthContainer = "govuk-width-container dfe-f-app-container dfe-f-app-container--wide";
+  var path = (Context.Request.Path.Value ?? string.Empty).TrimEnd('/');
+  var isHomepage = path.Length == 0
+    || path.Equals("/home", StringComparison.OrdinalIgnoreCase)
+    || path.Equals("/home/index", StringComparison.OrdinalIgnoreCase);
+  var serviceNavClass = isHomepage ? "govuk-service-navigation govuk-service-navigation--inverse" : "govuk-service-navigation";
+  var serviceName = ViewData["ServiceName"] as string ?? "DDT Manual";
+  var navId = "ddt-manual-primary-nav";
+  var navItems = new (string Title, string Url)[]
+  {
+    ("Standards", "/standards"),
+    ("Guidance", "/guidance"),
+    ("Search", "/search"),
+    ("Your library", "/your-library"),
+  };
+}
+
+<section aria-label="Service information" class="@serviceNavClass" data-module="govuk-service-navigation">
+  <div class="@AppWidthContainer">
+    <div class="govuk-service-navigation__container">
+      <span class="govuk-service-navigation__service-name">
+        <a href="/" class="govuk-service-navigation__link">@serviceName</a>
+      </span>
+      <nav aria-label="Menu" class="govuk-service-navigation__wrapper">
+        <button type="button" class="govuk-service-navigation__toggle govuk-js-service-navigation-toggle" aria-controls="@navId" hidden>
+          Menu
+        </button>
+        <ul class="govuk-service-navigation__list" id="@navId">
+          @foreach (var item in navItems)
+          {
+            var active = ServiceNavigationHelper.IsNavItemActive(Context.Request.Path.Value, item.Url);
+            var isLibrary = string.Equals(item.Url, "/your-library", StringComparison.OrdinalIgnoreCase);
+            <li class="govuk-service-navigation__item @(active ? "govuk-service-navigation__item--active" : null)">
+              @if (active)
+              {
+                <a class="govuk-service-navigation__link@(isLibrary ? " lib-nav-link" : null)" href="@item.Url" aria-current="true">
+                  <strong class="govuk-service-navigation__active-fallback">
+                    @item.Title
+                  </strong>
+                </a>
+              }
+              else
+              {
+                <a class="govuk-service-navigation__link@(isLibrary ? " lib-nav-link" : null)" href="@item.Url">
+                  @item.Title
+                </a>
+              }
+            </li>
+          }
+        </ul>
+      </nav>
+    </div>
+  </div>
+</section>

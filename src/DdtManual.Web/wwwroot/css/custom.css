@@ -1,0 +1,407 @@
+.dfe-f-c-border-top{
+    border-top: 2px solid #cecece;
+    padding-top: 1rem;
+}
+
+.dfe-f-c-border-top.dfe-f-c-border-top--blue{
+    border-top-color:  #1d70b8;
+}
+
+/* Detailed guide: main column when “Other pages” / contents are in the sidebar — no duplicate top border */
+.dfe-f-detailed-guide-main--no-border-top {
+    border-top: 0;
+    padding-top: 0;
+}
+
+
+.dfe-f-c-collectopn-list li{
+    border-bottom: 1px solid #cecece;
+    padding-bottom: 1rem;
+}
+
+.dfe-f-c-collectopn-list li a {
+    font-weight: 500;
+}
+
+/* Collection “Contents” nav: hollow circles matching link blue (see design reference) */
+.dfe-f-c-contents-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.dfe-f-c-contents-list li {
+    position: relative;
+    padding-left: 1.175rem;
+}
+
+.dfe-f-c-contents-list li a {
+    text-decoration: none;
+}
+
+.dfe-f-c-contents-list li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.5rem;
+    width: 0.625rem;
+    height: 0.625rem;
+    border: 2px solid #1d70b8;
+    border-radius: 50%;
+    background-color: #ffffff;
+    box-sizing: border-box;
+}
+
+/* Current page in contents nav (Detailed Guide): solid GOV.UK blue dot */
+.dfe-f-c-contents-list li:has([aria-current="page"])::before {
+    background-color: #1d70b8;
+}
+
+
+.ss-standard-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+ol.ss-standard-list li:first-child {
+    border-top: 1px solid #cecece;
+}
+ol.ss-standard-list li {
+    border-bottom: 1px solid #cecece;
+    padding: 1rem 0 1.175rem 0;
+}
+
+ol.ss-standard-list li a {
+    font-weight: 600;
+}
+
+/* Masthead: space below meta line (Part of / Last reviewed / Owner) */
+.page-hero__meta {
+    margin-bottom: 30px;
+}
+
+/* Masthead: gap between breadcrumbs and H1 when there is no caption/badge above the title */
+.dfe-f-masthead__title--breadcrumb-gap {
+    margin-top: 30px;
+}
+
+/* Detailed guide: main + aside columns align from tablet (GOV.UK grid stacks below 40.0625em) */
+@media (min-width: 40.0625em) {
+    .dfe-f-detailed-guide-layout {
+        align-items: flex-start;
+    }
+}
+
+/* Detailed guide: guide pages list (on right sidebar) */
+.dfe-f-c-guide-pages-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.dfe-f-c-guide-pages-list li {
+    border-bottom: 1px solid #cecece;
+    padding: 0rem 0 0.3rem 0;
+}
+.dfe-f-c-guide-pages-list li a {
+    font-weight: 400;
+    font-size: 1rem;
+    text-decoration: none;
+}
+
+/* if its the current page, make the text bold  this is set by the aria-current="page" attribute
+<li class="govuk-!-font-weight-bold">
+                                    <span aria-current="page">1. Understand users and their needs</span>
+                            </li>*/
+.dfe-f-c-guide-pages-list li span[aria-current="page"] {
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+/* ── Action link ([actionLink] … [/actionLink] from GovUkMarkdown) ────────────
+   Matches GOV.UK Publishing action link — markup emitted by ApplyActionLinkShortcodes */
+
+.dfe-f-action-link {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 30px;
+}
+
+.dfe-f-action-link__icon {
+    display: inline-flex;
+    flex-shrink: 0;
+}
+
+.dfe-f-action-link__svg {
+    width: 27px;
+    height: 27px;
+}
+
+.dfe-f-action-link__icon-circle {
+    fill: var(--govuk-colour-blue, #1d70b8);
+}
+
+.dfe-f-action-link__icon-arrow {
+    fill: var(--govuk-colour-white, #ffffff);
+}
+
+.dfe-f-action-link__link-wrapper {
+    flex: 0 1 auto;
+}
+
+.dfe-f-action-link__link {
+    font-weight: 700;
+    font-size: 1.125rem;
+}
+
+.dfe-f-action-link:hover .dfe-f-action-link__icon-circle {
+    fill: var(--govuk-colour-blue-shade-50, #003078);
+}
+
+.dfe-f-action-link__link:focus {
+    outline: 3px solid var(--govuk-colour-focus, #fd0);
+    outline-offset: 0;
+    background-color: var(--govuk-colour-focus, #fd0);
+    color: var(--govuk-colour-text, #0b0c0c);
+    text-decoration: none;
+}
+
+.dfe-f-action-link:focus-within .dfe-f-action-link__icon-circle {
+    fill: var(--govuk-colour-text, #0b0c0c);
+}
+
+@media (max-width: 40.0625em) {
+    .dfe-f-action-link__link {
+        font-size: 1rem;
+    }
+}
+
+
+
+.dfe-roadmap {
+    padding: 50px 0;
+    background: #f3f2f1;
+  }
+  
+  .dfe-roadmap__intro {
+    max-width: 760px;
+    margin-bottom: 40px;
+  }
+  
+  .dfe-roadmap__title {
+    margin-top: 15px;
+  }
+  
+  .dfe-roadmap__timeline {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .dfe-roadmap__stage {
+    position: relative;
+    display: grid;
+    grid-template-columns: 64px 1fr;
+    column-gap: 24px;
+    margin-bottom: 30px;
+  }
+  
+  .dfe-roadmap__stage::before {
+    content: "";
+    position: absolute;
+    left: 31px;
+    top: 64px;
+    bottom: -30px;
+    width: 4px;
+    background: #b1b4b6;
+  }
+  
+  .dfe-roadmap__stage:last-child::before {
+    display: none;
+  }
+  
+  .dfe-roadmap__stage-marker {
+    position: relative;
+    z-index: 1;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: #1d70b8;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 0 8px #f3f2f1;
+  }
+  
+  .dfe-roadmap__stage-marker span {
+    font-family: "GDS Transport", arial, sans-serif;
+    font-weight: 700;
+    font-size: 24px;
+    line-height: 1;
+  }
+  
+  .dfe-roadmap__stage--now .dfe-roadmap__stage-marker {
+    background: #00703c;
+  }
+  
+  .dfe-roadmap__stage--next .dfe-roadmap__stage-marker {
+    background: #1d70b8;
+  }
+  
+  .dfe-roadmap__stage--later .dfe-roadmap__stage-marker {
+    background: #505a5f;
+  }
+  
+  .dfe-roadmap__stage-content {
+    background: #ffffff;
+    border: 1px solid #b1b4b6;
+    border-left: 6px solid #1d70b8;
+  }
+  
+  .dfe-roadmap__stage--now .dfe-roadmap__stage-content {
+    border-left-color: #00703c;
+  }
+  
+  .dfe-roadmap__stage--next .dfe-roadmap__stage-content {
+    border-left-color: #1d70b8;
+  }
+  
+  .dfe-roadmap__stage--later .dfe-roadmap__stage-content {
+    border-left-color: #505a5f;
+  }
+  
+  .dfe-roadmap__stage-header {
+    padding: 25px 25px 5px 25px;
+  }
+  
+  .dfe-roadmap__stage-header .govuk-heading-l {
+    margin-bottom: 10px;
+  }
+  
+  .dfe-roadmap__stage-kicker {
+    margin-bottom: 5px;
+    color: #505a5f;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  
+  .dfe-roadmap__items {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .dfe-roadmap__item {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 20px 25px;
+    border-top: 1px solid #b1b4b6;
+  }
+  
+  .dfe-roadmap__item-content {
+    max-width: 680px;
+  }
+  
+  .dfe-roadmap__item .govuk-heading-s {
+    margin-bottom: 5px;
+  }
+  
+  .dfe-roadmap__item .govuk-body-s {
+    margin-bottom: 0;
+  }
+  
+  .dfe-roadmap__item .govuk-tag {
+    align-self: flex-start;
+    white-space: nowrap;
+  }
+  
+  @media (min-width: 48.0625em) {
+    .dfe-roadmap__timeline {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      column-gap: 24px;
+    }
+  
+    .dfe-roadmap__stage {
+      display: block;
+      margin-bottom: 0;
+    }
+  
+    .dfe-roadmap__stage::before {
+      left: 64px;
+      right: -24px;
+      top: 32px;
+      bottom: auto;
+      width: auto;
+      height: 4px;
+    }
+  
+    .dfe-roadmap__stage:last-child::before {
+      display: none;
+    }
+  
+    .dfe-roadmap__stage-marker {
+      margin-bottom: 24px;
+    }
+  
+    .dfe-roadmap__stage-content {
+      min-height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+  
+    .dfe-roadmap__items {
+      flex: 1;
+    }
+  
+    .dfe-roadmap__item {
+      display: block;
+    }
+  
+    .dfe-roadmap__item .govuk-tag {
+      margin-top: 15px;
+    }
+  }
+  
+  @media (max-width: 48.0525em) {
+    .dfe-roadmap {
+      padding: 30px 0;
+    }
+  
+    .dfe-roadmap__stage {
+      grid-template-columns: 48px 1fr;
+      column-gap: 16px;
+    }
+  
+    .dfe-roadmap__stage::before {
+      left: 23px;
+      top: 48px;
+    }
+  
+    .dfe-roadmap__stage-marker {
+      width: 48px;
+      height: 48px;
+    }
+  
+    .dfe-roadmap__stage-marker span {
+      font-size: 19px;
+    }
+  
+    .dfe-roadmap__stage-header {
+      padding: 20px 20px 5px 20px;
+    }
+  
+    .dfe-roadmap__item {
+      display: block;
+      padding: 20px;
+    }
+  
+    .dfe-roadmap__item .govuk-tag {
+      margin-top: 15px;
+    }
+  }

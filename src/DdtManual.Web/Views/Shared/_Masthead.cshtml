@@ -1,0 +1,173 @@
+@using System.Linq
+@using DdtManual.Web.Models.Templates
+@{
+    var heroType = ViewBag.HeroType as string ?? "guidance";
+    var title = ViewBag.HeroTitle as string ?? "";
+    var intro = ViewBag.HeroIntro as string ?? "";
+    var badgeText = ViewBag.HeroBadgeText as string ?? "Guidance";
+    var metaDescription = ViewBag.HeroMetaDescription as string ?? "";
+    var collections = ViewBag.HeroCollections as IReadOnlyList<ManualCollectionRefModel> ?? Array.Empty<ManualCollectionRefModel>();
+    var showLastReviewedDate = (bool?)ViewBag.HeroShowLastReviewedDate ?? false;
+    var lastReviewedDateDisplay = ViewBag.HeroLastReviewedDateDisplay as string ?? "";
+    var showOwner = (bool?)ViewBag.HeroShowOwner ?? true;
+    var owner = ViewBag.HeroOwner as string ?? "";
+    var ownerUrl = ViewBag.HeroOwnerUrl as string ?? "";
+    var collectionSlug = ViewBag.HeroCollectionSlug as string ?? "";
+    var collectionTitle = ViewBag.HeroCollectionTitle as string ?? "";
+    List<(string Title, string? Url)> breadcrumbItems;
+    var rawBreadcrumbs = ViewBag.HeroBreadcrumbItems;
+    if (rawBreadcrumbs is List<(string Title, string? Url)> nb)
+        breadcrumbItems = nb;
+    else if (rawBreadcrumbs is List<(string Title, string Url)> ob)
+        breadcrumbItems = ob.Select(x => (x.Title, string.IsNullOrEmpty(x.Url) ? (string?)null : x.Url)).ToList();
+    else
+        breadcrumbItems = [];
+
+    var hideBadge = (bool?)ViewBag.HideBadge ?? false;
+    var useInverseNav = (bool?)ViewBag.UseInverseNav ?? false;
+    var heroSectionTitle = ViewBag.HeroSectionTitle as string ?? "Guidance";
+    var heroSectionUrl = ViewBag.HeroSectionUrl as string ?? "/guidance";
+    var heroBreadcrumbCurrent = ViewBag.HeroBreadcrumbCurrent as string ?? "";
+    var heroGuideOverviewUrl = ViewBag.HeroGuideOverviewUrl as string ?? "";
+    var heroGuideOverviewTitle = ViewBag.HeroGuideOverviewTitle as string ?? "";
+    var heroHeadingCaption = ViewBag.HeroHeadingCaption as string ?? "";
+    var heroSuppressBottomMargin = (bool?)ViewBag.HeroSuppressBottomMargin ?? false;
+
+    var hasHeroCaption =
+        (!hideBadge && heroType != "guidance")
+        || !string.IsNullOrWhiteSpace(heroHeadingCaption);
+
+    var heroMetaClass = useInverseNav ? "page-hero__meta page-hero__meta--inverse" : "page-hero__meta";
+    var metaShowPartOf = heroType != "collection"
+        && (collections.Count > 0 || (!string.IsNullOrEmpty(collectionSlug) && !string.IsNullOrEmpty(collectionTitle)));
+    var metaShowLastReviewed = showLastReviewedDate && !string.IsNullOrEmpty(lastReviewedDateDisplay);
+    var metaShowOwner = showOwner && !string.IsNullOrWhiteSpace(owner);
+    var metaAny = metaShowPartOf || metaShowLastReviewed || metaShowOwner;
+    var hasLedeOrMeta = !string.IsNullOrEmpty(intro)
+        || !string.IsNullOrEmpty(metaDescription)
+        || (metaAny && heroType != "collection");
+    var mastheadMarginClass = heroSuppressBottomMargin ? "govuk-!-margin-bottom-0" : "govuk-!-margin-bottom-0";
+    const string MastheadInnerContainer = "dfe-f-app-container dfe-f-app-container--wide govuk-width-container dfe-f-masthead__inner";
+}
+
+<div class="dfe-f-masthead dfe-f-masthead--page @mastheadMarginClass" aria-label="@title">
+    <div class="@MastheadInnerContainer">
+        <nav class="govuk-breadcrumbs" aria-label="Breadcrumb">
+            <ol class="govuk-breadcrumbs__list">
+                @if (breadcrumbItems.Count > 0)
+                {
+                    @foreach (var item in breadcrumbItems)
+                    {
+                        @if (!string.IsNullOrEmpty(item.Url))
+                        {
+                            <li class="govuk-breadcrumbs__list-item"><a class="govuk-breadcrumbs__link" href="@item.Url">@item.Title</a></li>
+                        }
+                        else
+                        {
+                            <li class="govuk-breadcrumbs__list-item" aria-current="page">@item.Title</li>
+                        }
+                    }
+                }
+                else if (heroType == "collection")
+                {
+                    <li class="govuk-breadcrumbs__list-item"><a class="govuk-breadcrumbs__link" href="/">Home</a></li>
+                    <li class="govuk-breadcrumbs__list-item"><a class="govuk-breadcrumbs__link" href="@heroSectionUrl">@heroSectionTitle</a></li>
+                    @if (!string.IsNullOrEmpty(heroBreadcrumbCurrent))
+                    {
+                        <li class="govuk-breadcrumbs__list-item" aria-current="page">@heroBreadcrumbCurrent</li>
+                    }
+                }
+                else if (heroType == "guidance")
+                {
+                    <li class="govuk-breadcrumbs__list-item"><a class="govuk-breadcrumbs__link" href="/">Home</a></li>
+                    <li class="govuk-breadcrumbs__list-item"><a class="govuk-breadcrumbs__link" href="@heroSectionUrl">@heroSectionTitle</a></li>
+                    @if (!string.IsNullOrEmpty(collectionSlug) && !string.IsNullOrEmpty(collectionTitle))
+                    {
+                        <li class="govuk-breadcrumbs__list-item"><a class="govuk-breadcrumbs__link" href="/collection/@collectionSlug">@collectionTitle</a></li>
+                    }
+                    @if (!string.IsNullOrEmpty(heroGuideOverviewUrl) && !string.IsNullOrEmpty(heroGuideOverviewTitle))
+                    {
+                        <li class="govuk-breadcrumbs__list-item"><a class="govuk-breadcrumbs__link" href="@heroGuideOverviewUrl">@heroGuideOverviewTitle</a></li>
+                    }
+                }
+                else
+                {
+                    <li class="govuk-breadcrumbs__list-item"><a class="govuk-breadcrumbs__link" href="/">Home</a></li>
+                }
+            </ol>
+        </nav>
+
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-two-thirds">
+                
+
+
+        @if (!hideBadge && heroType != "guidance")
+        {
+            <span class="govuk-caption-l govuk-!-margin-top-5 govuk-!-display-block">@System.Net.WebUtility.HtmlEncode(badgeText)</span>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(heroHeadingCaption))
+        {
+            <span class="govuk-caption-l govuk-!-margin-top-5 govuk-!-display-block">@System.Net.WebUtility.HtmlEncode(heroHeadingCaption)</span>
+        }
+
+        @* No caption/badge: top spacing so title clears breadcrumbs (see custom.css .dfe-f-masthead__title--breadcrumb-gap). *@
+        <h1 class="govuk-heading-xl @(hasLedeOrMeta ? "govuk-!-margin-bottom-2" : "govuk-!-margin-bottom-0") @(!hasHeroCaption ? "dfe-f-masthead__title--breadcrumb-gap" : "")">@title</h1>
+
+        @if (!string.IsNullOrEmpty(intro))
+        {
+            <p class="page-hero__lede govuk-body-l govuk-!-margin-top-4">@intro</p>
+        }
+        @if (!string.IsNullOrEmpty(metaDescription))
+        {
+            <p class="page-hero__lede govuk-body-l @(string.IsNullOrEmpty(intro) ? "govuk-!-margin-top-4" : "govuk-!-margin-top-2")">@metaDescription</p>
+        }
+        @if (metaAny && heroType != "collection")
+        {
+            <div class="@heroMetaClass govuk-!-margin-top-4">
+                @if (metaShowPartOf)
+                {
+                    @if (collections.Count > 0)
+                    {
+                        var c = collections[0];
+                        <span class="page-hero__meta-item"><strong>Part of:</strong> <a class="@(useInverseNav ? "govuk-link govuk-link--inverse" : "govuk-link")" href="/collection/@c.Slug">@System.Net.WebUtility.HtmlEncode(c.Title) collection</a></span>
+                    }
+                    else
+                    {
+                        <span class="page-hero__meta-item"><strong>Part of:</strong> <a class="@(useInverseNav ? "govuk-link govuk-link--inverse" : "govuk-link")" href="/collection/@collectionSlug">@System.Net.WebUtility.HtmlEncode(collectionTitle) collection</a></span>
+                    }
+                    @if (metaShowLastReviewed || metaShowOwner)
+                    {
+                        <span class="page-hero__meta-dot" aria-hidden="true">·</span>
+                    }
+                }
+                @if (metaShowLastReviewed)
+                {
+                    <span class="page-hero__meta-item"><strong>Last reviewed:</strong> @System.Net.WebUtility.HtmlEncode(lastReviewedDateDisplay)</span>
+                    @if (metaShowOwner)
+                    {
+                        <span class="page-hero__meta-dot" aria-hidden="true">·</span>
+                    }
+                }
+                @if (metaShowOwner)
+                {
+                    <span class="page-hero__meta-item">
+                        <strong>Owner:</strong>
+                        @if (!string.IsNullOrWhiteSpace(ownerUrl))
+                        {
+                            <a class="@(useInverseNav ? "govuk-link govuk-link--inverse" : "govuk-link")" href="@System.Net.WebUtility.HtmlEncode(ownerUrl)">@System.Net.WebUtility.HtmlEncode(owner)</a>
+                        }
+                        else
+                        {
+                            @System.Net.WebUtility.HtmlEncode(owner)
+                        }
+                    </span>
+                }
+            </div>
+        }
+
+                    </div>
+        </div>
+    </div>
+</div>

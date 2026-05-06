@@ -1,0 +1,162 @@
+@model DdtManual.Web.Models.Templates.ManualStandardsListPageModel
+@using System.Linq
+@using Microsoft.AspNetCore.WebUtilities
+@{
+    ViewData["Title"] = Model.PageTitle;
+    ViewBag.HeroType = "guidance";
+    ViewBag.HeroTitle = Model.PageTitle;
+    ViewBag.HeroIntro = Model.Intro;
+    ViewBag.HeroBadgeText = "Standards";
+    ViewBag.HeroCollectionSlug = "standards";
+    ViewBag.HeroCollectionTitle = "Standards";
+    ViewBag.HeroBreadcrumbItems = new List<(string Title, string? Url)>
+    {
+        ("Home", "/"),
+        ("Standards", "/standards")
+    };
+
+    var standardsUrl = Url.Action("Standards", "UiTemplates") ?? "/ui/templates/standards";
+
+    string BuildFilterUrl(string? searchTerm, IEnumerable<string>? categories)
+    {
+        var query = new List<KeyValuePair<string, string?>>();
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+            query.Add(new KeyValuePair<string, string?>("search", searchTerm));
+        foreach (var c in categories ?? [])
+            if (!string.IsNullOrWhiteSpace(c))
+                query.Add(new KeyValuePair<string, string?>("category", c));
+        return query.Count == 0 ? standardsUrl : QueryHelpers.AddQueryString(standardsUrl, query);
+    }
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/guidance-index.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/standards-page.css" asp-append-version="true" />
+}
+
+@section Masthead {
+    @await Html.PartialAsync("_Masthead")
+}
+
+<div class="govuk-grid-row">
+    <aside class="govuk-grid-column-one-quarter dfe-f-guidance-filters" aria-label="Filter standards">
+        <form method="get" action="@standardsUrl" role="search">
+            @foreach (var c in Model.SelectedCategories)
+            {
+                <input type="hidden" name="category" value="@c" />
+            }
+            <div class="govuk-form-group">
+                <div class="gem-c-search gem-c-search--on-white gem-c-search--separate-label govuk-!-display-none-print">
+                    <label class="gem-c-search__label govuk-label" for="template-standards-search">Search</label>
+                    @await Html.PartialAsync("_DfeInlineSearchRow", new DfeInlineSearchRowModel
+                    {
+                        InputId = "template-standards-search",
+                        InputName = "search",
+                        Value = Model.SearchQuery,
+                        SubmitAriaLabel = "Search",
+                        Spellcheck = false,
+                    })
+                </div>
+            </div>
+        </form>
+
+        <hr class="govuk-section-break govuk-section-break--visible govuk-section-break--m" />
+
+        <div>
+            <h2 class="govuk-heading-s">Filter by category</h2>
+            @{
+                var allCategoriesUrl = BuildFilterUrl(Model.SearchQuery, null);
+                var allCategoriesCurrent = Model.SelectedCategories.Count == 0;
+            }
+            <nav class="dfe-f-side-navigation" aria-label="Filter by category" data-module="dfe-f-side-navigation">
+                <button type="button" class="dfe-f-side-navigation__toggle" aria-controls="template-standards-category-side-nav" aria-expanded="false">Filter by category</button>
+                <ul id="template-standards-category-side-nav" class="dfe-f-side-navigation__list" hidden>
+                    <li class="dfe-f-side-navigation__item @(allCategoriesCurrent ? "dfe-f-side-navigation__item--current" : null)">
+                        <a class="dfe-f-side-navigation__link govuk-link govuk-link--no-visited-state govuk-link--no-underline" href="@allCategoriesUrl" @(allCategoriesCurrent ? "aria-current=\"page\"" : null)>
+                            All categories
+                        </a>
+                    </li>
+                    @foreach (var cat in Model.Categories)
+                    {
+                        var catCurrent = Model.SelectedCategories.Count == 1
+                            && string.Equals(Model.SelectedCategories[0], cat, StringComparison.OrdinalIgnoreCase);
+                        var catUrl = BuildFilterUrl(Model.SearchQuery, new[] { cat });
+                        <li class="dfe-f-side-navigation__item @(catCurrent ? "dfe-f-side-navigation__item--current" : null)">
+                            <a class="dfe-f-side-navigation__link govuk-link govuk-link--no-visited-state govuk-link--no-underline" href="@catUrl" @(catCurrent ? "aria-current=\"page\"" : null)>
+                                @cat
+                            </a>
+                        </li>
+                    }
+                </ul>
+            </nav>
+        </div>
+
+        @if (Model.HasActiveFilters)
+        {
+            <div class="dfe-f-guidance-filters__actions">
+                <a class="govuk-link dfe-f-guidance-filters__clear" href="@standardsUrl">Clear filters</a>
+            </div>
+        }
+    </aside>
+
+    <div class="govuk-grid-column-three-quarters dfe-f-guidance-main">
+        @if (Model.HasActiveFilters)
+        {
+            <div class="dfe-standards-filter__applied dfe-standards-filter__applied--above-results">
+                <p class="dfe-standards-filter__applied-heading">Applied filters</p>
+                <ul class="dfe-standards-filter__chips">
+                    @if (!string.IsNullOrEmpty(Model.SearchQuery))
+                    {
+                        <li>
+                            <span class="dfe-standards-filter__chip">
+                                <span class="dfe-standards-filter__chip-text">Search: @Model.SearchQuery</span>
+                                <a href="@BuildFilterUrl(null, Model.SelectedCategories)" class="dfe-standards-filter__chip-remove" aria-label="Remove search filter"><span aria-hidden="true">×</span></a>
+                            </span>
+                        </li>
+                    }
+                    @foreach (var cat in Model.SelectedCategories)
+                    {
+                        var others = Model.SelectedCategories.Where(c => c != cat).ToList();
+                        <li>
+                            <span class="dfe-standards-filter__chip">
+                                <span class="dfe-standards-filter__chip-text">@cat</span>
+                                <a href="@BuildFilterUrl(Model.SearchQuery, others)" class="dfe-standards-filter__chip-remove" aria-label="Remove @cat filter"><span aria-hidden="true">×</span></a>
+                            </span>
+                        </li>
+                    }
+                </ul>
+                <a href="@standardsUrl" class="dfe-standards-filter__clear-all govuk-link govuk-link--no-visited-state">Clear all filters</a>
+            </div>
+        }
+
+        @if (Model.Standards.Count == 0)
+        {
+            <div class="dfe-f-guidance-empty-state">
+                <h2 class="govuk-heading-m">No standards match those filters</h2>
+                <p class="govuk-body">Try clearing one or more filters to see more standards.</p>
+                <p class="govuk-body"><a class="govuk-link" href="@standardsUrl">View all standards</a></p>
+            </div>
+        }
+        else
+        {
+            <ul class="govuk-list">
+                @foreach (var s in Model.Standards)
+                {
+                    <li class="dfe-standards-index__result-item">
+                        <h3 class="govuk-heading-s">
+                            <a href="@Url.Action("StandardDetail", "UiTemplates", new { slug = s.Slug })" class="govuk-link">@s.Title</a>
+                        </h3>
+                        @if (!string.IsNullOrEmpty(s.CategoryLabel))
+                        {
+                            <p class="govuk-body-s">@s.CategoryLabel</p>
+                        }
+                        @if (!string.IsNullOrEmpty(s.Summary))
+                        {
+                            <p class="govuk-body govuk-body-s">@s.Summary</p>
+                        }
+                    </li>
+                }
+            </ul>
+        }
+    </div>
+</div>

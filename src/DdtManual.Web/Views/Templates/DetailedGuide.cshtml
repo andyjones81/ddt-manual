@@ -1,0 +1,229 @@
+@using DdtManual.Web.Models
+@using DdtManual.Web.Models.Templates
+@model ManualDetailedGuidePageModel
+@{
+    ViewData["Title"] = Model.IsOverviewPage ? Model.HeroTitle : (Model.PageTitle ?? Model.HeroTitle);
+
+    ViewBag.HeroType = "guidance";
+    ViewBag.HeroTitle = Model.HeroTitle;
+    ViewBag.HeroIntro = Model.HeroIntro;
+    ViewBag.HeroCollections = Model.Collections;
+    ViewBag.HeroShowLastReviewedDate = Model.ShowLastReviewedDateOnPage;
+    ViewBag.HeroLastReviewedDateDisplay = Model.LastReviewedDateDisplay;
+    ViewBag.HeroShowOwner = Model.ShowOwnerOnPage;
+    ViewBag.HeroOwner = Model.Owner;
+    ViewBag.HeroOwnerUrl = Model.OwnerUrl;
+    ViewBag.HeroCollectionSlug = Model.CollectionSlug;
+    ViewBag.HeroCollectionTitle = Model.CollectionTitle;
+    ViewBag.HeroBadgeText = "Guidance";
+
+    if (!Model.IsOverviewPage && !string.IsNullOrWhiteSpace(Model.GuideSlug))
+    {
+        ViewBag.HeroGuideOverviewUrl = $"/guidance/guides/{Model.GuideSlug}";
+        ViewBag.HeroGuideOverviewTitle = Model.HeroTitle;
+    }
+
+    var currentPath = Context?.Request?.Path.Value?.TrimEnd('/') ?? string.Empty;
+    var requestScheme = Context?.Request?.Scheme ?? "https";
+    var requestHost = Context?.Request?.Host.Value ?? string.Empty;
+    var canonicalCurrentUrl = string.IsNullOrEmpty(requestHost)
+        ? currentPath
+        : $"{requestScheme}://{requestHost}{currentPath}";
+}
+
+@if (!string.IsNullOrEmpty(Model.CustomCss))
+{
+    @section Styles {
+        <style>@Html.Raw(Model.CustomCss)</style>
+    }
+}
+
+@if (!string.IsNullOrEmpty(Model.CustomJs))
+{
+    @section Scripts {
+        <script>@Html.Raw(Model.CustomJs)</script>
+    }
+}
+
+@section Masthead {
+    @await Html.PartialAsync("_Masthead")
+}
+
+@if (Model.ShowDraftContentBanner)
+{
+    @await Html.PartialAsync("_DraftContentBanner")
+}
+
+@if (Model.ShowContents && Model.ContentsItems.Count > 0)
+{
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-two-thirds">
+            <nav aria-label="@(Model.HeroTitle) contents">
+                <h2 class="govuk-heading-s">Contents</h2>
+                <ul class="govuk-list dfe-f-c-contents-list govuk-!-margin-bottom-9">
+                    @foreach (var item in Model.ContentsItems)
+                    {
+                        <li>
+                            @if (item.IsCurrent || item.Url == null)
+                            {
+                                <span aria-current="page" class="@(item.IsCurrent ? "govuk-!-font-weight-bold" : null)">@item.Title</span>
+                            }
+                            else
+                            {
+                                <a class="govuk-link" href="@item.Url">@item.Title</a>
+                            }
+                        </li>
+                    }
+                </ul>
+            </nav>
+        </div>
+    </div>
+}
+
+<div class="govuk-grid-row dfe-f-detailed-guide-layout">
+    <div class="govuk-grid-column-two-thirds">
+        <div class="@(Model.ShowGuidePagesOnRight ? "dfe-f-detailed-guide-main--no-border-top" : Model.ShowContents ? "dfe-f-c-border-top" : "")">
+            <section class="dfe-f-content-section" aria-label="Content">
+                @if (ViewBag.PageNotification != null)
+                {
+                    @await Html.PartialAsync("_PageNotificationBanner", (PageNotification)ViewBag.PageNotification)
+                }
+
+                @{
+                    var contentSectionHeading = Model.IsOverviewPage
+                        ? Model.HeroTitle
+                        : (Model.PageTitle?.Trim() ?? string.Empty);
+                    var showContentSectionH2 = !string.IsNullOrWhiteSpace(contentSectionHeading);
+                }
+                @if (Model.ShowPageHeader && (showContentSectionH2 || !string.IsNullOrEmpty(Model.PageBeforeContentsHtml)))
+                {
+                    <header class="dfe-f-content-header">
+                        @if (showContentSectionH2)
+                        {
+                            <h2 class="govuk-heading-l">@contentSectionHeading</h2>
+                        }
+
+                        @if (!string.IsNullOrEmpty(Model.PageBeforeContentsHtml))
+                        {
+                            <div class="dfe-f-content-header__intro govuk-body">
+                                @Html.Raw(Model.PageBeforeContentsHtml)
+                            </div>
+                        }
+                    </header>
+                }
+
+                @if (!string.IsNullOrEmpty(Model.BodyHtml))
+                {
+                  
+                        @Html.Raw(Model.BodyHtml)
+                  
+                }
+
+                @if (Model.PaginationPrevUrl != null || Model.PaginationNextUrl != null)
+                {
+                    <nav class="govuk-pagination govuk-pagination--block" aria-label="Pages in this guide">
+                        @if (Model.PaginationPrevUrl != null)
+                        {
+                            <div class="govuk-pagination__prev">
+                                <a class="govuk-link govuk-pagination__link" href="@Model.PaginationPrevUrl" rel="prev">
+                                    <svg class="govuk-pagination__icon govuk-pagination__icon--prev" xmlns="http://www.w3.org/2000/svg" height="13" width="15" focusable="false" aria-hidden="true" viewBox="0 0 15 13"><path d="m6.5938-0.0078125-6.7266 6.7266 6.7441 6.4062 1.377-1.449-4.1856-3.9768h12.896v-2h-12.984l4.2931-4.293-1.414-1.414z"/></svg>
+                                    <span class="govuk-pagination__link-title">Previous<span class="govuk-visually-hidden"> page</span></span>
+                                    <span class="govuk-visually-hidden">:</span>
+                                    <span class="govuk-pagination__link-label">@(Model.PaginationPrevLabel ?? "Previous")</span>
+                                </a>
+                            </div>
+                        }
+                        @if (Model.PaginationNextUrl != null)
+                        {
+                            <div class="govuk-pagination__next">
+                                <a class="govuk-link govuk-pagination__link" href="@Model.PaginationNextUrl" rel="next">
+                                    <span class="govuk-pagination__link-title">Next<span class="govuk-visually-hidden"> page</span></span>
+                                    <span class="govuk-visually-hidden">:</span>
+                                    <span class="govuk-pagination__link-label">@(Model.PaginationNextLabel ?? "Next")</span>
+                                    <svg class="govuk-pagination__icon govuk-pagination__icon--next" xmlns="http://www.w3.org/2000/svg" height="13" width="15" focusable="false" aria-hidden="true" viewBox="0 0 15 13"><path d="m8.107-0.0078125-1.4136 1.414 4.2926 4.293h-12.986v2h12.896l-4.1855 3.9766 1.377 1.4492 6.7441-6.4062-6.7246-6.7246z"/></svg>
+                                </a>
+                            </div>
+                        }
+                    </nav>
+                }
+            </section>
+        </div>
+    </div>
+
+    <div class="govuk-grid-column-one-third">
+        <div class="dfe-f-c-border-top dfe-f-c-border-top--blue">
+            <aside class="dfe-f-detailed-guide-sidebar" aria-label="Supporting information">
+                @await Html.PartialAsync("_SharePage", null, new ViewDataDictionary(ViewData)
+                {
+                    ["ShareTitle"]     = Model.IsOverviewPage ? Model.HeroTitle : (Model.PageTitle ?? Model.HeroTitle),
+                    ["ShareUrl"]       = canonicalCurrentUrl,
+                    ["LibId"]          = currentPath,
+                    ["LibTitle"]       = Model.IsOverviewPage ? Model.HeroTitle : (Model.PageTitle ?? Model.HeroTitle),
+                    ["LibUrl"]         = currentPath,
+                    ["LibType"]        = "Guidance",
+                    ["LibDescription"] = Model.HeroIntro ?? string.Empty
+                })
+
+                @if (Model.ShowGuidePagesOnRight && Model.GuidePagesRightNav.Count > 0)
+                {
+                    <section id="other-pages" class="govuk-!-margin-top-5" aria-labelledby="other-pages-heading">
+                        <h3 id="other-pages-heading" class="govuk-heading-s">Other pages</h3>
+                        <ol class="govuk-list dfe-f-c-guide-pages-list">
+                            @foreach (var item in Model.GuidePagesRightNav)
+                            {
+                                <li class="@(item.IsCurrent ? "govuk-!-font-weight-bold" : null)">
+                                    @if (item.IsCurrent || string.IsNullOrEmpty(item.Url))
+                                    {
+                                        <span aria-current="page">@item.Title</span>
+                                    }
+                                    else
+                                    {
+                                        <a class="govuk-link" href="@item.Url">@item.Title</a>
+                                    }
+                                </li>
+                            }
+                        </ol>
+                    </section>
+                }
+
+                @if (Model.RelatedContent.Count > 0)
+                {
+                    <section id="related-content" class="govuk-!-margin-top-5" aria-label="Related content">
+                        @foreach (var item in Model.RelatedContent)
+                        {
+                            <div>
+                                <h3 class="govuk-heading-s">@Html.Raw(item.HeaderHtml)</h3>
+                                @if (!string.IsNullOrEmpty(item.ContentHtml))
+                                {
+                                    <div class="govuk-body-s">@Html.Raw(item.ContentHtml)</div>
+                                }
+                            </div>
+                        }
+                    </section>
+                }
+
+                @if (Model.RelatedFiles.Count > 0)
+                {
+                    <section id="downloads" aria-labelledby="downloads-heading">
+                        <h3 id="downloads-heading" class="govuk-heading-s">Downloads</h3>
+                        <ul class="govuk-list">
+                            @foreach (var file in Model.RelatedFiles)
+                            {
+                                <li>
+                                    <a class="govuk-link" href="@file.Url" target="_blank" rel="noopener noreferrer">
+                                        @System.Net.WebUtility.HtmlEncode(file.Name)<span class="govuk-visually-hidden"> (opens in new tab)</span>
+                                    </a>
+                                    <p class="govuk-body-s">@System.Net.WebUtility.HtmlEncode(file.FileType) · @System.Net.WebUtility.HtmlEncode(file.SizeDisplay)</p>
+                                    @if (!string.IsNullOrWhiteSpace(file.Caption))
+                                    {
+                                        <p class="govuk-body-s">@System.Net.WebUtility.HtmlEncode(file.Caption)</p>
+                                    }
+                                </li>
+                            }
+                        </ul>
+                    </section>
+                }
+            </aside>
+        </div>
+    </div>
+</div>

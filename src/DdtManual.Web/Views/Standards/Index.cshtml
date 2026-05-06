@@ -1,0 +1,248 @@
+@using System.Linq
+@using DdtManual.Infrastructure.Standards
+@using Microsoft.AspNetCore.WebUtilities
+@model DdtStandardsResponse
+@{
+    ViewData["Title"] = "Standards";
+    ViewBag.HeroType = "guidance";
+    ViewBag.HeroTitle = "Standards";
+    ViewBag.HeroIntro = "Digital, data and technology standards to support good service delivery in the Department for Education.";
+    ViewBag.HeroBadgeText = "Standards";
+    ViewBag.HeroCollectionSlug = "standards";
+    ViewBag.HeroCollectionTitle = "Standards";
+    ViewBag.HeroBreadcrumbItems = new List<(string Title, string? Url)>
+    {
+        ("Home", "/"),
+        ("Standards", null)
+    };
+
+    var standards = Model?.Data ?? new List<DdtStandardDto>();
+    var categories = ViewBag.Categories as List<string> ?? new List<string>();
+    var search = ViewBag.Search as string;
+    var selectedCategories = ViewBag.Category as List<string> ?? new List<string>();
+    var hasActiveFilters = !string.IsNullOrEmpty(search) || selectedCategories.Any();
+    var pageSize = ViewBag.PageSize as int? ?? 10;
+    var currentPage = ViewBag.CurrentPage as int? ?? 1;
+    var totalPages = ViewBag.TotalPages as int? ?? 1;
+    var totalRecords = ViewBag.TotalRecords as int? ?? 0;
+    var showingFrom = totalRecords > 0 ? (currentPage - 1) * pageSize + 1 : 0;
+    var showingTo = totalRecords > 0 ? Math.Min(currentPage * pageSize, totalRecords) : 0;
+    var errorMessage = ViewBag.ErrorMessage as string;
+    var categoryCounts = ViewBag.CategoryCounts as Dictionary<string, int> ?? new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+
+    string BuildFilterUrl(string? searchTerm, IEnumerable<string>? categories, int? page = null)
+    {
+        var query = new List<KeyValuePair<string, string?>>();
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+            query.Add(new KeyValuePair<string, string?>("search", searchTerm));
+        foreach (var c in categories ?? Enumerable.Empty<string>())
+        {
+            if (!string.IsNullOrWhiteSpace(c))
+                query.Add(new KeyValuePair<string, string?>("category", c));
+        }
+
+        if (page.HasValue && page.Value > 1)
+            query.Add(new KeyValuePair<string, string?>("page", page.Value.ToString()));
+
+        var actionUrl = Url.Action("Index", "Standards") ?? "/standards";
+        return query.Count == 0 ? actionUrl : QueryHelpers.AddQueryString(actionUrl, query);
+    }
+
+    var standardsBaseUrl = Url.Action("Index", "Standards") ?? "/standards";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/guidance-index.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/standards-page.css" asp-append-version="true" />
+}
+
+@section Masthead {
+    @await Html.PartialAsync("_Masthead")
+}
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-full">
+            <div class="govuk-error-summary" aria-labelledby="error-summary-title" role="alert" tabindex="-1" data-module="govuk-error-summary">
+                <h2 class="govuk-error-summary__title" id="error-summary-title">There is a problem</h2>
+                <div class="govuk-error-summary__body">
+                    <ul class="govuk-list govuk-error-summary__list">
+                        <li><a href="#standards-content">@errorMessage</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+<div class="govuk-grid-row govuk-!-margin-bottom-6 govuk-!-margin-top-4" id="standards-content">
+    <aside class="govuk-grid-column-one-quarter dfe-f-guidance-filters" aria-label="Filter standards">
+        <form method="get" action="@standardsBaseUrl" role="search">
+            @foreach (var selectedCategory in selectedCategories)
+            {
+                <input type="hidden" name="category" value="@selectedCategory" />
+            }
+            <div class="govuk-form-group govuk-!-margin-bottom-0">
+                <div class="gem-c-search gem-c-search--on-white gem-c-search--separate-label govuk-!-display-none-print">
+                    <label class="gem-c-search__label govuk-label" for="standards-search">Search standards</label>
+                    @await Html.PartialAsync("_DfeInlineSearchRow", new DfeInlineSearchRowModel
+                    {
+                        InputId = "standards-search",
+                        InputName = "search",
+                        Value = search,
+                        SubmitAriaLabel = "Search standards",
+                        Spellcheck = false,
+                    })
+                </div>
+            </div>
+        </form>
+
+        <hr class="govuk-section-break govuk-section-break--visible govuk-section-break--m" />
+
+        <div>
+            <h2 class="govuk-heading-s govuk-!-margin-top-0 govuk-!-margin-bottom-3">Filter by category</h2>
+            @{
+                var allCategoriesUrl = BuildFilterUrl(search, null);
+                var allCategoriesCurrent = selectedCategories.Count == 0;
+            }
+            <nav class="dfe-f-side-navigation" aria-label="Filter by category" data-module="dfe-f-side-navigation">
+                <button type="button" class="dfe-f-side-navigation__toggle" aria-controls="standards-category-side-nav" aria-expanded="false">Filter by category</button>
+                <ul id="standards-category-side-nav" class="dfe-f-side-navigation__list" hidden>
+                    <li class="dfe-f-side-navigation__item @(allCategoriesCurrent ? "dfe-f-side-navigation__item--current" : null)">
+                        <a class="dfe-f-side-navigation__link govuk-link govuk-link--no-visited-state govuk-link--no-underline" href="@allCategoriesUrl" @(allCategoriesCurrent ? "aria-current=\"page\"" : null)>
+                            All categories
+                        </a>
+                    </li>
+                    @foreach (var cat in categories)
+                    {
+                        var catCurrent = selectedCategories.Count == 1
+                            && string.Equals(selectedCategories[0], cat, StringComparison.OrdinalIgnoreCase);
+                        var catUrl = BuildFilterUrl(search, new[] { cat });
+                        <li class="dfe-f-side-navigation__item @(catCurrent ? "dfe-f-side-navigation__item--current" : null)">
+                            <a class="dfe-f-side-navigation__link govuk-link govuk-link--no-visited-state govuk-link--no-underline" href="@catUrl" @(catCurrent ? "aria-current=\"page\"" : null)>
+                                @cat
+                            </a>
+                        </li>
+                    }
+                </ul>
+            </nav>
+        </div>
+
+        @if (hasActiveFilters)
+        {
+            <div class="dfe-f-guidance-filters__actions govuk-!-margin-top-4">
+                <a href="@standardsBaseUrl" class="govuk-link dfe-f-guidance-filters__clear">Clear filters</a>
+            </div>
+        }
+    </aside>
+
+    <div class="govuk-grid-column-three-quarters dfe-f-guidance-main">
+        @if (hasActiveFilters)
+        {
+            <div class="dfe-standards-filter__applied dfe-standards-filter__applied--above-results govuk-!-margin-bottom-4">
+                <p class="dfe-standards-filter__applied-heading">Applied filters</p>
+                <ul class="dfe-standards-filter__chips">
+                    @if (!string.IsNullOrEmpty(search))
+                    {
+                        <li>
+                            <span class="dfe-standards-filter__chip">
+                                <span class="dfe-standards-filter__chip-text">Search: @search</span>
+                                <a href="@BuildFilterUrl(null, selectedCategories)" class="dfe-standards-filter__chip-remove" aria-label="Remove search filter"><span aria-hidden="true">×</span></a>
+                            </span>
+                        </li>
+                    }
+                    @foreach (var cat in selectedCategories)
+                    {
+                        var otherCategories = selectedCategories.Where(c => c != cat).ToList();
+                        <li>
+                            <span class="dfe-standards-filter__chip">
+                                <span class="dfe-standards-filter__chip-text">@cat</span>
+                                <a href="@BuildFilterUrl(search, otherCategories)" class="dfe-standards-filter__chip-remove" aria-label="Remove @cat filter"><span aria-hidden="true">×</span></a>
+                            </span>
+                        </li>
+                    }
+                </ul>
+                <a href="@standardsBaseUrl" class="dfe-standards-filter__clear-all govuk-link govuk-link--no-visited-state">Clear all filters</a>
+            </div>
+        }
+        @if (standards.Any())
+        {
+            <div class="govuk-body govuk-!-margin-bottom-4">
+                <p class="govuk-body-s">Showing @showingFrom to @showingTo of @totalRecords standards</p>
+            </div>
+             <ul class="govuk-list dfe-f-c-results-list">
+                @foreach (var standard in standards)
+                {
+                    <li>
+                        <h3 class="govuk-heading-s govuk-!-margin-bottom-2">
+                            <a href="@Url.Action("Details", "Standards", new { slug = standard.Slug })" class="govuk-link">@standard.Title</a>
+                        </h3>
+                        @if (!string.IsNullOrEmpty(standard.Summary))
+                        {
+                            var firstFullStop = standard.Summary.IndexOf('.');
+                            var truncatedSummary = firstFullStop >= 0
+                                ? standard.Summary.Substring(0, firstFullStop + 1)
+                                : standard.Summary;
+                            <p class="govuk-body">@truncatedSummary</p>
+                        }
+                    </li>
+                }
+            </ul>
+            @if (totalPages > 1)
+            {
+                <nav class="govuk-pagination govuk-!-margin-top-6" role="navigation" aria-label="Results">
+                    @if (currentPage > 1)
+                    {
+                        <div class="govuk-pagination__prev">
+                            <a class="govuk-link govuk-pagination__link" href="@BuildFilterUrl(search, selectedCategories, currentPage - 1)" rel="prev">
+                                <svg class="govuk-pagination__icon govuk-pagination__icon--prev" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13"><path d="m6.5938-0.0078125-6.7266 6.7266 6.7441 6.4062 1.377-1.449-4.7426-4.5111 4.725-4.4062z"></path></svg>
+                                <span class="govuk-pagination__link-title">Previous</span>
+                            </a>
+                        </div>
+                    }
+                    <ul class="govuk-pagination__list">
+                        @for (var i = 1; i <= totalPages; i++)
+                        {
+                            @if (i == currentPage)
+                            {
+                                <li class="govuk-pagination__item govuk-pagination__item--current">
+                                    <a class="govuk-link govuk-pagination__link" href="#" aria-label="Page @i" aria-current="page">@i</a>
+                                </li>
+                            }
+                            else if (i == 1 || i == totalPages || (i >= currentPage - 2 && i <= currentPage + 2))
+                            {
+                                <li class="govuk-pagination__item">
+                                    <a class="govuk-link govuk-pagination__link" href="@BuildFilterUrl(search, selectedCategories, i)" aria-label="Page @i">@i</a>
+                                </li>
+                            }
+                            else if (i == currentPage - 3 || i == currentPage + 3)
+                            {
+                                <li class="govuk-pagination__item govuk-pagination__item--ellipsis">…</li>
+                            }
+                        }
+                    </ul>
+                    @if (currentPage < totalPages)
+                    {
+                        <div class="govuk-pagination__next">
+                            <a class="govuk-link govuk-pagination__link" href="@BuildFilterUrl(search, selectedCategories, currentPage + 1)" rel="next">
+                                <span class="govuk-pagination__link-title">Next</span>
+                                <svg class="govuk-pagination__icon govuk-pagination__icon--next" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13"><path d="m8.107-0.0078125-1.4136 1.414 4.2926 4.293h-12.986v2h12.896l-4.1855 3.9766 1.377 1.4492 6.7441-6.4062-6.7246-6.7266z"></path></svg>
+                            </a>
+                        </div>
+                    }
+                </nav>
+            }
+        }
+        else
+        {
+            <div class="dfe-f-guidance-empty-state">
+                <h2 class="govuk-heading-m">No standards found</h2>
+                <p class="govuk-body">Try adjusting your search or filters.</p>
+                @if (hasActiveFilters)
+                {
+                    <p class="govuk-body"><a href="@standardsBaseUrl" class="govuk-link">Clear filters</a> to see all standards.</p>
+                }
+            </div>
+        }
+    </div>
+</div>

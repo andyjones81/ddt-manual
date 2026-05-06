@@ -1,0 +1,109 @@
+/* Standards index: applied filter chips */
+.dfe-standards-filter__applied {
+  background-color: var(--govuk-colour-white, #ffffff);
+  border: 1px solid var(--govuk-colour-border, #b1b4b6);
+  padding: 20px 20px 18px;
+  margin-bottom: 24px;
+}
+
+.dfe-standards-filter__applied-heading {
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--govuk-colour-secondary-text, #505a5f);
+  margin: 0 0 14px 0;
+}
+
+.dfe-standards-filter__chips {
+  list-style: none;
+  margin: 0 0 14px 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.dfe-standards-filter__chips li {
+  margin: 0;
+}
+
+.dfe-standards-filter__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 8px 8px 14px;
+  background-color: var(--govuk-colour-black-tint-95, #f3f2f1);
+  border: 1px solid var(--govuk-colour-border, #b1b4b6);
+  font-size: 16px;
+  line-height: 1.35;
+}
+
+.dfe-standards-filter__chip-text {
+  font-weight: 600;
+  color: var(--govuk-colour-text, #0b0c0c);
+  max-width: 280px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dfe-standards-filter__chip-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  margin: 0;
+  padding: 0;
+  font-size: 18px;
+  line-height: 1;
+  font-weight: 700;
+  color: var(--govuk-colour-secondary-text, #505a5f);
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.dfe-standards-filter__chip-remove:hover {
+  background-color: var(--govuk-colour-black-tint-90, #e8e8e8);
+  color: var(--govuk-colour-text, #0b0c0c);
+}
+
+.dfe-standards-filter__chip-remove:focus {
+  outline: 3px solid var(--govuk-colour-focus, #fd0);
+  outline-offset: 0;
+  color: var(--govuk-colour-text, #0b0c0c);
+}
+
+.dfe-standards-filter__clear-all {
+  display: inline-block;
+  font-size: 16px;
+  font-weight: 700;
+  text-decoration-thickness: 2px;
+}
+
+.dfe-standards-filter__clear-all:hover {
+  text-decoration-thickness: 3px;
+}
+
+.dfe-standards-filter__applied--above-results {
+  margin-bottom: 0;
+}
+
+/* Standards index template — list rows */
+.dfe-standards-index__result-item {
+  border-bottom: 1px solid var(--govuk-colour-border, #b1b4b6);
+  padding-bottom: 1rem;
+}
+
+.dfe-standards-index__result-item:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+/* Standard detail: full-width version history strip */
+.dfe-standards-detail__version-footer {
+  border-top: 2px solid var(--govuk-colour-border, #b1b4b6);
+}

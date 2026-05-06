@@ -1,0 +1,7 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/DdtManual.Application/DdtManual.Application.csproj" />
+    <Project Path="src/DdtManual.Infrastructure/DdtManual.Infrastructure.csproj" />
+    <Project Path="src/DdtManual.Web/DdtManual.Web.csproj" />
+  </Folder>
+</Solution>

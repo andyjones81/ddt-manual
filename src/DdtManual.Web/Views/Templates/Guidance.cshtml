@@ -1,0 +1,77 @@
+@model DdtManual.Web.Models.Templates.ManualGuidanceIndexViewModel
+@using System.Linq
+@using Microsoft.AspNetCore.WebUtilities
+@{
+    ViewData["Title"] = "Guidance";
+
+    string BuildFilterUrl(string? areaSlug, IEnumerable<string>? professionSlugs, string? searchTerm)
+    {
+        var query = new List<KeyValuePair<string, string?>>();
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+            query.Add(new KeyValuePair<string, string?>("search", searchTerm));
+        if (!string.IsNullOrWhiteSpace(areaSlug))
+            query.Add(new KeyValuePair<string, string?>("guidanceArea", areaSlug));
+        foreach (var professionSlug in professionSlugs ?? [])
+        {
+            if (!string.IsNullOrWhiteSpace(professionSlug))
+                query.Add(new KeyValuePair<string, string?>("professions", professionSlug));
+        }
+        return query.Count == 0 ? "/guidance" : QueryHelpers.AddQueryString("/guidance", query);
+    }
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/guidance-index.css" asp-append-version="true" />
+}
+
+@section Masthead {
+    @await Html.PartialAsync("_Masthead")
+}
+
+<div class="govuk-grid-row">
+
+
+    <div class="govuk-grid-column-three-quarters dfe-f-guidance-main">
+        @if (Model.Areas.Count == 0)
+        {
+            <div class="dfe-f-guidance-empty-state">
+                <h2 class="govuk-heading-m">No guidance matches those filters</h2>
+                <p class="govuk-body">Try clearing one or more filters to see more collections.</p>
+                <p class="govuk-body"><a class="govuk-link" href="/guidance">View all guidance</a></p>
+            </div>
+        }
+        else
+        {
+            @foreach (var area in Model.Areas)
+            {
+                <section class="dfe-f-guidance-area-section" id="area-@area.Slug" data-area="@area.Slug" aria-labelledby="ga-@area.Slug-hd">
+                    <div>
+                        <h2 class="govuk-heading-l" id="ga-@area.Slug-hd">@area.Name</h2>
+                        @if (!string.IsNullOrWhiteSpace(area.IntroText))
+                        {
+                            <p class="govuk-body">@area.IntroText</p>
+                        }
+                    </div>
+
+                    <div class="govuk-grid-row dfe-f-grid-row--equal-height">
+                        @foreach (var collection in area.Collections)
+                        {
+                            <div class="govuk-grid-column-one-third">
+                                <article class="dfe-f-card">
+                                    <div class="dfe-f-card__inner">
+                                        <header class="dfe-f-card__header">
+                                            <h3 class="govuk-heading-m dfe-f-card__heading">
+                                                <a class="govuk-link dfe-f-card__link" href="@collection.Url">@collection.Title</a>
+                                            </h3>
+                                        </header>
+                                        <p class="dfe-f-card__body govuk-body">@collection.Description</p>
+                                    </div>
+                                </article>
+                            </div>
+                        }
+                    </div>
+                </section>
+            }
+        }
+    </div>
+</div>

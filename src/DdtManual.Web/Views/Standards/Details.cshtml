@@ -1,0 +1,245 @@
+@using System.Linq
+@using DdtManual.Infrastructure.Standards
+@using DdtManual.Web.Helpers
+@using Microsoft.AspNetCore.Mvc.ViewFeatures
+@model DdtStandardDetailDto?
+@{
+    ViewData["Title"] = Model?.Title ?? "Standard details";
+    var compassStandardUrl = ViewBag.CompassStandardUrl as string ?? "";
+    var errorMessage = ViewBag.ErrorMessage as string;
+
+    if (Model != null)
+    {
+        ViewBag.HeroTitle = Model.Title;
+        ViewBag.HeroIntro = Model.Summary;
+        ViewBag.HeroBadgeText = "Standard";
+        ViewBag.HeroHeadingCaption = "DDT Standard";
+        ViewBag.HeroCollectionSlug = "standards";
+        ViewBag.HeroCollectionTitle = "Standards";
+        ViewBag.HeroGuideOverviewUrl = "/standards";
+        ViewBag.HeroGuideOverviewTitle = "DDT Standards";
+    }
+}
+
+@section Masthead {
+    @if (Model != null)
+    {
+        @await Html.PartialAsync("_Masthead")
+    }
+}
+
+@if (Model != null)
+{
+    var hasPurpose = !string.IsNullOrEmpty(Model.Purpose);
+    var hasHowToMeet = !string.IsNullOrEmpty(Model.HowToMeet);
+    var hasGovernance = !string.IsNullOrEmpty(Model.Governance);
+    var hasRelatedGuidance = !string.IsNullOrEmpty(Model.RelatedGuidance);
+    var hasCategories = Model.Categories != null && Model.Categories.Any(c => !string.IsNullOrEmpty(c.Name));
+    var hasContents = hasPurpose || hasHowToMeet || hasGovernance || hasRelatedGuidance || hasCategories;
+    var relatedStandards = ViewBag.RelatedStandards as List<DdtStandardDto> ?? new List<DdtStandardDto>();
+    var applyNoContentsSectionStyle = !hasContents;
+    var relatedStandardsSorted = relatedStandards.OrderBy(s => s.Title ?? string.Empty, StringComparer.OrdinalIgnoreCase).ToList();
+    var requestScheme = Context?.Request?.Scheme ?? "https";
+    var requestHost = Context?.Request?.Host.Value ?? string.Empty;
+    var currentPath = Context?.Request?.Path.Value ?? string.Empty;
+    var canonicalCurrentUrl = $"{requestScheme}://{requestHost}{currentPath}";
+
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-full">
+                <div class="govuk-error-summary" aria-labelledby="error-summary-title" role="alert" tabindex="-1" data-module="govuk-error-summary">
+                    <h2 class="govuk-error-summary__title" id="error-summary-title">There is a problem</h2>
+                    <div class="govuk-error-summary__body">
+                        <ul class="govuk-list govuk-error-summary__list">
+                            <li><a href="#main-content">@errorMessage</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    @if (hasContents)
+    {
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-two-thirds">
+                <nav aria-label="@(Model.Title) contents">
+                    <h2 class="govuk-heading-s govuk-!-margin-bottom-3">Contents</h2>
+                    <ul class="govuk-list dfe-f-c-contents-list">
+                        @if (hasPurpose)
+                        {
+                            <li><a class="govuk-link" href="#purpose">Purpose</a></li>
+                        }
+                        @if (hasCategories)
+                        {
+                            <li><a class="govuk-link" href="#categories">Categories</a></li>
+                        }
+                        @if (hasHowToMeet)
+                        {
+                            <li><a class="govuk-link" href="#how-to-meet">How to meet this standard</a></li>
+                        }
+                        @if (hasGovernance)
+                        {
+                            <li><a class="govuk-link" href="#governance">Governance</a></li>
+                        }
+                        @if (hasRelatedGuidance)
+                        {
+                            <li><a class="govuk-link" href="#related-guidance">Related guidance</a></li>
+                        }
+                        <li><a class="govuk-link" href="#version-history">Version history</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    }
+
+    <div class="dfe-f-detailed-guide-layout govuk-grid-row @(applyNoContentsSectionStyle ? "govuk-!-margin-top-4" : "govuk-!-margin-top-6")">
+        <div class="govuk-grid-column-two-thirds govuk-!-margin-bottom-9">
+            <div class="dfe-f-c-border-top">
+                <section class="dfe-f-content-section" aria-label="Content" id="standard-content">
+                @if (Model.LegalStandard == true)
+                {
+                    <div class="govuk-warning-text">
+                        <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+                        <strong class="govuk-warning-text__text">
+                            <span class="govuk-visually-hidden">Warning</span>
+                            You are breaking the law if you do not meet this standard.
+                        </strong>
+                    </div>
+                }
+
+                @if (hasPurpose)
+                {
+                    <h2 class="govuk-heading-l" id="purpose">Purpose</h2>
+                    <div class="dfe-f-body">@Html.Raw(GovUkMarkdown.ToGovUkHtml(Model.Purpose))</div>
+                }
+                @if (Model.Categories != null && Model.Categories.Any())
+                {
+                    var categoriesGrouped = Model.Categories
+                        .Where(c => !string.IsNullOrEmpty(c.Name))
+                        .GroupBy(c => c.Name!, StringComparer.OrdinalIgnoreCase)
+                        .OrderBy(g => g.Key);
+                    <h2 class="govuk-heading-l govuk-!-margin-top-6" id="categories">Categories</h2>
+                    <div class="govuk-!-margin-bottom-6">
+                        @foreach (var group in categoriesGrouped)
+                        {
+                            var subCategories = group
+                                .SelectMany(g => g.SubCategories ?? Enumerable.Empty<DdtStandardSubCategoryDto>())
+                                .Where(sc => !string.IsNullOrEmpty(sc.Name))
+                                .Select(sc => sc.Name!)
+                                .Distinct(StringComparer.OrdinalIgnoreCase)
+                                .OrderBy(n => n, StringComparer.OrdinalIgnoreCase)
+                                .ToList();
+                            <div class="govuk-!-margin-bottom-4">
+                                <p class="govuk-body govuk-!-margin-bottom-1"><strong>@group.Key</strong></p>
+                                @if (subCategories.Any())
+                                {
+                                    <ul class="govuk-list govuk-list--bullet">
+                                        @foreach (var subName in subCategories)
+                                        {
+                                            <li>@subName</li>
+                                        }
+                                    </ul>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+                @if (hasHowToMeet)
+                {
+                    <h2 class="govuk-heading-l" id="how-to-meet">How to meet this standard</h2>
+                    <div class="dfe-f-body">@Html.Raw(GovUkMarkdown.ToGovUkHtml(Model.HowToMeet))</div>
+                }
+                @if (hasGovernance)
+                {
+                    <h2 class="govuk-heading-l" id="governance">Governance</h2>
+                    <div class="dfe-f-body">@Html.Raw(GovUkMarkdown.ToGovUkHtml(Model.Governance))</div>
+                }
+                @if (hasRelatedGuidance)
+                {
+                    <h2 class="govuk-heading-l" id="related-guidance">Related guidance</h2>
+                    <div class="dfe-f-body">@Html.Raw(GovUkMarkdown.ToGovUkHtml(Model.RelatedGuidance))</div>
+                }
+                @if (!string.IsNullOrEmpty(compassStandardUrl))
+                {
+                    <div class="govuk-inset-text govuk-!-margin-top-6">
+                        <p class="govuk-body">
+                            <strong>View full details of the standard including products and standards owners in the internal <a href="@compassStandardUrl" class="govuk-link" target="_blank" rel="noopener noreferrer">Manage standards service</a>.</strong>
+                        </p>
+                    </div>
+                }
+                </section>
+            </div>
+        </div>
+        <div class="govuk-grid-column-one-third">
+            <div class="dfe-f-c-border-top dfe-f-c-border-top--blue">
+                <aside class="dfe-f-detailed-guide-sidebar" aria-label="Supporting information">
+                    @await Html.PartialAsync("_SharePage", null, new ViewDataDictionary(ViewData)
+                    {
+                        ["ShareTitle"] = Model.Title,
+                        ["ShareUrl"] = canonicalCurrentUrl,
+                        ["LibId"] = currentPath.TrimEnd('/'),
+                        ["LibTitle"] = Model.Title,
+                        ["LibType"] = "Standard",
+                        ["LibUrl"] = currentPath.TrimEnd('/'),
+                        ["LibDescription"] = Model.Summary ?? string.Empty
+                    })
+
+                    @if (relatedStandardsSorted.Any())
+                    {
+                        <section id="related-standards" class="govuk-!-margin-top-9" aria-labelledby="related-standards-heading">
+                            <h3 id="related-standards-heading" class="govuk-heading-s govuk-!-margin-top-0">Related standards</h3>
+                            <ul class="govuk-list dfe-f-c-guide-pages-list">
+                                @foreach (var s in relatedStandardsSorted)
+                                {
+                                    <li>
+                                        <a class="govuk-link" href="@Url.Action("Details", "Standards", new { slug = s.Slug })">@(s.Title ?? "Standard")</a>
+                                    </li>
+                                }
+                            </ul>
+                        </section>
+                    }
+                </aside>
+            </div>
+        </div>
+    </div>
+
+    <div class="govuk-grid-row govuk-!-margin-top-8 govuk-!-padding-top-6 dfe-standards-detail__version-footer">
+        <div class="govuk-grid-column-full">
+            <details class="govuk-details dfe-version-history" id="version-history" data-module="govuk-details">
+                <summary class="govuk-details__summary">
+                    <span class="govuk-details__summary-text">Version history</span>
+                </summary>
+                <div class="govuk-details__text">
+                    <table class="govuk-table dfe-version-history__table">
+                        <thead class="govuk-table__head">
+                            <tr class="govuk-table__row">
+                                <th scope="col" class="govuk-table__header">Version</th>
+                                <th scope="col" class="govuk-table__header">Date</th>
+                                <th scope="col" class="govuk-table__header">Details</th>
+                            </tr>
+                        </thead>
+                        <tbody class="govuk-table__body">
+                            <tr class="govuk-table__row">
+                                <td class="govuk-table__cell">@(Model.Version ?? "–")</td>
+                                <td class="govuk-table__cell">@(Model.LastUpdated?.ToString("dd MMMM yyyy") ?? Model.FirstPublished?.ToString("dd MMMM yyyy") ?? "–")</td>
+                                <td class="govuk-table__cell">Current version</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </details>
+        </div>
+    </div>
+}
+else
+{
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-two-thirds">
+            <h1 class="govuk-heading-xl">Standard not found</h1>
+            <p class="govuk-body">The standard you are looking for could not be found.</p>
+            <p class="govuk-body"><a href="@Url.Action("Index", "Standards")" class="govuk-link">Return to DDT standards list</a></p>
+        </div>
+    </div>
+}

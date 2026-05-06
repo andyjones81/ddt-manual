@@ -1,0 +1,147 @@
+@using Microsoft.AspNetCore.Html
+@using DdtManual.Web.Helpers
+@using DdtManual.Web.Models.Templates
+@model ManualSearchPageModel
+@{
+    ViewData["Title"] = string.IsNullOrEmpty(Model.Keywords) ? "Search" : $"Search results for \"{Model.Keywords}\"";
+    var hasQuery = !string.IsNullOrEmpty(Model.Keywords);
+    var hasResults = hasQuery && Model.Results.Count > 0;
+    var noResults = hasQuery && Model.Results.Count == 0;
+
+
+    ViewBag.HeroTitle = "Search this site";
+    ViewBag.HeroIntro = "Searches guidance, collections, guides, pages and standards.";
+    ViewBag.HeroBadgeText = "Search";
+    ViewBag.HeroBreadcrumbItems = new List<(string Title, string? Url)>
+    {
+        ("Home", "/"),
+        ("Search", null)
+    };
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/search-page.css" asp-append-version="true" />
+}
+
+@section Masthead {
+    @await Html.PartialAsync("_Masthead")
+}
+
+<div class="dfe-f-search-page">
+    @if (!hasQuery || noResults)
+    {
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-two-thirds">
+                <form method="get" asp-controller="Search" asp-action="Index" role="search">
+                    @foreach (var t in Model.Types)
+                    {
+                        <input type="hidden" name="type" value="@t" />
+                    }
+                    @if (Model.HighlightKeywords)
+                    {
+                        <input type="hidden" name="highlight" value="1" />
+                    }
+                    <div class="govuk-form-group">
+                        <div class="gem-c-search gem-c-search--on-white gem-c-search--separate-label govuk-!-display-none-print">
+                            <label class="govuk-label govuk-label--l" for="search-page-keywords">
+                                Search
+                            </label>
+                            <div id="search-page-hint" class="govuk-hint">
+                                Search across guidance, collections, guides, pages and standards on this site.
+                            </div>
+                            @await Html.PartialAsync("_DfeInlineSearchRow", new DfeInlineSearchRowModel
+                            {
+                                InputId = "search-page-keywords",
+                                InputName = "keywords",
+                                Value = Model.Keywords,
+                                DescribedBy = "search-page-hint",
+                                SubmitAriaLabel = "Search",
+                                Spellcheck = true,
+                            })
+                        </div>
+                    </div>
+                </form>
+
+                @if (noResults)
+                {
+                    <p class="govuk-body">No results for <strong>@Model.Keywords</strong>. Try different keywords.</p>
+                }
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-one-third">
+                <form method="get" asp-controller="Search" asp-action="Index" role="search">
+                    @foreach (var t in Model.Types)
+                    {
+                        <input type="hidden" name="type" value="@t" />
+                    }
+                    @if (Model.HighlightKeywords)
+                    {
+                        <input type="hidden" name="highlight" value="1" />
+                    }
+                    <div class="govuk-form-group">
+                        <div class="gem-c-search gem-c-search--on-white gem-c-search--separate-label govuk-!-display-none-print">
+                            <label class="gem-c-search__label govuk-label govuk-label--s" for="search-filter-keywords">
+                                Search again
+                            </label>
+                            <div id="search-filter-hint" class="govuk-hint">
+                                Refine your keywords to narrow results.
+                            </div>
+                            @await Html.PartialAsync("_DfeInlineSearchRow", new DfeInlineSearchRowModel
+                            {
+                                InputId = "search-filter-keywords",
+                                InputName = "keywords",
+                                Value = Model.Keywords,
+                                DescribedBy = "search-filter-hint",
+                                SubmitAriaLabel = "Search",
+                                Spellcheck = true,
+                            })
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="govuk-grid-column-two-thirds">
+                <p class="govuk-body"><strong>@Model.Results.Count</strong> result@(Model.Results.Count == 1 ? "" : "s") for @Model.Keywords</p>
+
+                <ul class="govuk-list dfe-f-search-results__list">
+                    @foreach (var item in Model.Results)
+                    {
+                        <li class="dfe-f-search-results__item">
+                            <h2 class="govuk-heading-m govuk-!-margin-bottom-2">
+                                <a href="@item.Url" class="govuk-link">
+                                    @(Model.HighlightKeywords
+                                        ? SearchHighlightHelper.HighlightKeywords(item.Title, Model.Keywords)
+                                        : (IHtmlContent)new HtmlString(System.Net.WebUtility.HtmlEncode(item.Title)))
+                                </a>
+                            </h2>
+                             @if (!string.IsNullOrWhiteSpace(item.Summary))
+                            {
+                                <p class="govuk-body govuk-body govuk-!-margin-bottom-2">
+                                    @(Model.HighlightKeywords
+                                        ? SearchHighlightHelper.HighlightKeywords(item.Summary, Model.Keywords)
+                                        : (IHtmlContent)new HtmlString(System.Net.WebUtility.HtmlEncode(item.Summary)))
+                                </p>
+                            }
+                            @if (!string.IsNullOrWhiteSpace(item.PartOfCollectionTitle) && !string.IsNullOrWhiteSpace(item.PartOfCollectionUrl))
+                            {
+                                <p class="govuk-body-s dfe-f-search-results__meta govuk-!-margin-bottom-0">
+                                    Part of collection:
+                                    <a href="@item.PartOfCollectionUrl" class="govuk-link">
+                                        @(Model.HighlightKeywords
+                                            ? SearchHighlightHelper.HighlightKeywords(item.PartOfCollectionTitle, Model.Keywords)
+                                            : (IHtmlContent)new HtmlString(System.Net.WebUtility.HtmlEncode(item.PartOfCollectionTitle!)))
+                                    </a>
+                                </p>
+                            }
+                           
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+    }
+</div>
