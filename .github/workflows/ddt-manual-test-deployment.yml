@@ -1,0 +1,85 @@
+# Deploy DDT Manual (ASP.NET Core) to the Test Azure Web App.
+# Same target as frontend/.github/workflows/test-deployment.yml:
+#   AZURE_WEBAPP_NAME: s186t01-goodservices-frontend
+# GitHub secret: AZUREAPPSERVICE_PUBLISHPROFILE_TEST (publish profile for that web app).
+
+name: DDT Manual — Deploy to Test
+
+env:
+  AZURE_WEBAPP_NAME: s186t01-goodservices-frontend
+  DOTNET_VERSION: '10.0.x'
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'ddt-manual/**'
+      - '.github/workflows/ddt-manual-test-deployment.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ddt-manual-test-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: ddt-manual
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-ddt-manual-${{ hashFiles('ddt-manual/**/packages.lock.json', 'ddt-manual/**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-ddt-manual-
+
+      - name: Restore NuGet packages
+        run: dotnet restore src/DdtManual.Web/DdtManual.Web.csproj
+
+      - name: Build with dotnet
+        run: dotnet build src/DdtManual.Web/DdtManual.Web.csproj --configuration Release --verbosity quiet --no-restore
+
+      - name: Publish with dotnet
+        run: dotnet publish src/DdtManual.Web/DdtManual.Web.csproj -c Release -o ${{ env.DOTNET_ROOT }}/myapp --verbosity quiet --no-build
+
+      - name: Upload artifact for deployment
+        uses: actions/upload-artifact@v4
+        with:
+          name: ddt-manual-net-app
+          path: ${{ env.DOTNET_ROOT }}/myapp
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    environment:
+      name: 'Development'
+      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ddt-manual-net-app
+
+      - name: Deploy to Azure Web App
+        id: deploy-to-webapp
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_TEST }}
+          package: .
